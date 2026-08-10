@@ -26,6 +26,16 @@
 #define MASTER_VOLUME   6000
 #define MAX_VOICES      4
 
+// ============================================================================
+// MODULATION PARAMETERS
+// ============================================================================
+#define LFO_WAVE_TYPE       0       // 0 = Sine, 1 = Triangle, 2 = Square
+#define LFO_RATE_HZ         5.0f    // Speed of modulation (0.1 Hz to 20.0 Hz)
+
+// Modulation Depths
+#define VIBRATO_DEPTH_SEMITONES 0.2f  // Pitch movement (+/- fraction of a semitone)
+#define TREMOLO_DEPTH           0.3f  // Volume movement (0.0 = off, 1.0 = full attenuation)
+
 enum SynthMode {
     MODE_FLUTE = 0,
     MODE_WAVETABLE = 1

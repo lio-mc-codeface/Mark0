@@ -4,6 +4,11 @@
 #include <Adafruit_SSD1306.h>
 #include "config.h"
 
+// Runtime Modifiable Modulation Parameters
+extern float g_lfoRateHz;
+extern float g_vibratoDepth;
+extern float g_tremoloDepth;
+
 void wavetable_init();
 void wavetable_ui_render(Adafruit_SSD1306 &display);
 void wavetable_audio_process(int16_t *buffer, uint16_t touchMask);

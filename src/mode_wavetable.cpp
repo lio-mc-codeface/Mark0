@@ -4,6 +4,11 @@
 #include <AsyncTCP.h>
 #include <math.h>
 
+// Global modulation variables initialized from config defaults
+float g_lfoRateHz    = LFO_RATE_HZ;
+float g_vibratoDepth = VIBRATO_DEPTH_SEMITONES;
+float g_tremoloDepth = TREMOLO_DEPTH;
+
 static float customWavetable[128];
 static Voice waveVoices[MAX_VOICES];
 
@@ -11,7 +16,6 @@ static Voice waveVoices[MAX_VOICES];
 static AsyncWebServer server(80);
 static AsyncWebSocket ws("/ws");
 
-// HTML + JavaScript Interface embedded in flash memory
 // HTML + JavaScript Interface embedded in flash memory
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -29,58 +33,102 @@ const char index_html[] PROGMEM = R"rawliteral(
             padding: 10px;
             touch-action: none;
         }
-        h2 { margin-bottom: 8px; }
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        h2 { margin: 0; }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ff3333;
+            display: inline-block;
+        }
+        .status-dot.online { background-color: #00ff66; }
         canvas {
             background-color: #1e1e1e;
             border: 2px solid #00e5ff;
             border-radius: 8px;
             width: 90vw;
-            height: 50vw;
+            height: 45vw;
             max-width: 500px;
-            max-height: 280px;
+            max-height: 250px;
             cursor: crosshair;
         }
         .controls {
             max-width: 500px;
-            margin: 15px auto;
+            margin: 10px auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         .slider-container {
             display: flex;
             align-items: center;
             justify-content: space-between;
             background: #252525;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 8px;
         }
-        .slider-container label { font-size: 14px; font-weight: bold; }
-        input[type=range] { flex-grow: 1; margin: 0 12px; }
-        .btn-container { display: flex; justify-content: center; gap: 8px; }
+        .slider-container label { font-size: 13px; font-weight: bold; width: 110px; text-align: left; }
+        input[type=range] { flex-grow: 1; margin: 0 10px; }
+        .val-disp { font-size: 13px; width: 35px; text-align: right; font-family: monospace; }
+        .btn-container { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
         button {
             background: #00e5ff;
             color: #000;
             border: none;
-            padding: 10px 18px;
+            padding: 8px 14px;
             font-weight: bold;
             border-radius: 5px;
-            font-size: 15px;
+            font-size: 14px;
         }
+        button.btn-sync { background: #ffaa00; }
     </style>
 </head>
 <body>
-    <h2>Tone-ner Wave Drawer</h2>
+    <div class="header">
+        <h2>Tone-ner Wave Drawer</h2>
+        <span id="statusDot" class="status-dot"></span>
+    </div>
+
     <canvas id="waveCanvas" width="128" height="128"></canvas>
 
     <div class="controls">
+        <!-- Waveform Smoothing -->
         <div class="slider-container">
             <label for="smoothSlider">Smoothing:</label>
             <input type="range" id="smoothSlider" min="0" max="20" value="0" oninput="applySmoothing()">
-            <span id="smoothVal">0</span>
+            <span id="smoothVal" class="val-disp">0</span>
+        </div>
+
+        <!-- LFO Rate -->
+        <div class="slider-container">
+            <label for="lfoRateSlider">LFO Speed:</label>
+            <input type="range" id="lfoRateSlider" min="0.1" max="20.0" step="0.1" value="5.0" oninput="sendModulationParams()">
+            <span id="lfoRateVal" class="val-disp">5.0</span>
+        </div>
+
+        <!-- Vibrato Depth -->
+        <div class="slider-container">
+            <label for="vibratoSlider">Vibrato (Pitch):</label>
+            <input type="range" id="vibratoSlider" min="0.0" max="2.0" step="0.05" value="0.2" oninput="sendModulationParams()">
+            <span id="vibratoVal" class="val-disp">0.2</span>
+        </div>
+
+        <!-- Tremolo Depth -->
+        <div class="slider-container">
+            <label for="tremoloSlider">Tremolo (Vol):</label>
+            <input type="range" id="tremoloSlider" min="0.0" max="1.0" step="0.05" value="0.3" oninput="sendModulationParams()">
+            <span id="tremoloVal" class="val-disp">0.3</span>
         </div>
 
         <div class="btn-container">
+            <button class="btn-sync" onclick="forceSync()">⚡ Sync ESP</button>
             <button onclick="presetSine()">Sine</button>
             <button onclick="presetSquare()">Square</button>
             <button onclick="presetSaw()">Saw</button>
@@ -90,14 +138,33 @@ const char index_html[] PROGMEM = R"rawliteral(
     <script>
         const canvas = document.getElementById('waveCanvas');
         const ctx = canvas.getContext('2d');
+        const statusDot = document.getElementById('statusDot');
         
-        // rawWave holds the exact original drawn points
         const rawWave = new Float32Array(128);
-        // processedWave holds the smoothed output sent to ESP32
         const processedWave = new Float32Array(128);
         
         let drawing = false;
-        let websocket = new WebSocket(`ws://${window.location.hostname}/ws`);
+        let websocket = null;
+
+        function initWebSocket() {
+            websocket = new WebSocket(`ws://${window.location.hostname}/ws`);
+
+            websocket.onopen = function() {
+                statusDot.classList.add('online');
+                sendWaveform();
+                sendModulationParams();
+            };
+
+            websocket.onclose = function() {
+                statusDot.classList.remove('online');
+                setTimeout(initWebSocket, 1000);
+            };
+
+            websocket.onerror = function(err) {
+                statusDot.classList.remove('online');
+                websocket.close();
+            };
+        }
 
         function drawGrid() {
             ctx.fillStyle = '#1e1e1e';
@@ -123,8 +190,32 @@ const char index_html[] PROGMEM = R"rawliteral(
         }
 
         function sendWaveform() {
-            if (websocket.readyState === WebSocket.OPEN) {
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
                 websocket.send(processedWave.buffer);
+            }
+        }
+
+        function sendModulationParams() {
+            const rate = parseFloat(document.getElementById('lfoRateSlider').value);
+            const vibrato = parseFloat(document.getElementById('vibratoSlider').value);
+            const tremolo = parseFloat(document.getElementById('tremoloSlider').value);
+
+            document.getElementById('lfoRateVal').innerText = rate.toFixed(1);
+            document.getElementById('vibratoVal').innerText = vibrato.toFixed(2);
+            document.getElementById('tremoloVal').innerText = tremolo.toFixed(2);
+
+            if (websocket && websocket.readyState === WebSocket.OPEN) {
+                const msg = `MOD:${rate}:${vibrato}:${tremolo}`;
+                websocket.send(msg);
+            }
+        }
+
+        function forceSync() {
+            if (!websocket || websocket.readyState !== WebSocket.OPEN) {
+                initWebSocket();
+            } else {
+                sendWaveform();
+                sendModulationParams();
             }
         }
 
@@ -132,10 +223,8 @@ const char index_html[] PROGMEM = R"rawliteral(
             const passes = parseInt(document.getElementById('smoothSlider').value);
             document.getElementById('smoothVal').innerText = passes;
 
-            // Copy raw wave
             processedWave.set(rawWave);
 
-            // Apply circular moving average filter for N passes
             for (let p = 0; p < passes; p++) {
                 let temp = new Float32Array(128);
                 for (let i = 0; i < 128; i++) {
@@ -163,10 +252,7 @@ const char index_html[] PROGMEM = R"rawliteral(
             let val = 1.0 - (y * 2.0);
             val = Math.max(-1.0, Math.min(1.0, val));
 
-            // Write into rawWave array
             rawWave[x] = val;
-            
-            // Recalculate smoothing and transmit
             applySmoothing();
         }
 
@@ -192,6 +278,7 @@ const char index_html[] PROGMEM = R"rawliteral(
         }
 
         presetSine();
+        initWebSocket();
     </script>
 </body>
 </html>
@@ -200,8 +287,24 @@ const char index_html[] PROGMEM = R"rawliteral(
 void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
     AwsFrameInfo *info = (AwsFrameInfo*)arg;
     if (info->final && info->index == 0 && info->len == len) {
+        // Option 1: Binary wavetable buffer (512 bytes = 128 floats)
         if (len == 128 * sizeof(float)) {
             memcpy(customWavetable, data, 128 * sizeof(float));
+        } 
+        // Option 2: Text command for modulation parameters
+        else {
+            data[len] = '\0'; // Null-terminate text string
+            String msg = String((char*)data);
+            if (msg.startsWith("MOD:")) {
+                int firstColon  = msg.indexOf(':', 4);
+                int secondColon = msg.indexOf(':', firstColon + 1);
+
+                if (firstColon > 0 && secondColon > 0) {
+                    g_lfoRateHz    = msg.substring(4, firstColon).toFloat();
+                    g_vibratoDepth = msg.substring(firstColon + 1, secondColon).toFloat();
+                    g_tremoloDepth = msg.substring(secondColon + 1).toFloat();
+                }
+            }
         }
     }
 }
@@ -214,7 +317,6 @@ void onEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType 
 }
 
 void wavetable_init() {
-    // Populate initial sine wave
     for (int i = 0; i < 128; i++) {
         customWavetable[i] = sinf((2.0f * M_PI * i) / 128.0f);
     }
@@ -224,14 +326,11 @@ void wavetable_init() {
         waveVoices[i].amplitude = 0.0f;
     }
 
-    // Initialize Wi-Fi Soft Access Point
     WiFi.softAP("Tone-ner-Synth");
 
-    // Attach WebSockets handler
     ws.onEvent(onEvent);
     server.addHandler(&ws);
 
-    // Serve HTML page
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send_P(200, "text/html", index_html);
     });
@@ -266,9 +365,12 @@ void wavetable_ui_render(Adafruit_SSD1306 &display) {
     display.display();
 }
 
+static float lfoPhase = 0.0f;
+
 void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
     ws.cleanupClients();
 
+    // 1. Touch Pad Voice Allocation
     for (uint8_t pad = 0; pad < 12; pad++) {
         if (touchMask & (1 << pad)) {
             bool playing = false;
@@ -296,19 +398,35 @@ void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
         }
     }
 
+    // 2. Dynamic Audio Processing
+    float lfoInc = g_lfoRateHz / (float)SAMPLE_RATE;
+
     for (int i = 0; i < BUFFER_SIZE; i++) {
+        // Calculate Sine LFO (-1.0 to 1.0)
+        float lfoVal = sinf(2.0f * M_PI * lfoPhase);
+
+        lfoPhase += lfoInc;
+        if (lfoPhase >= 1.0f) lfoPhase -= 1.0f;
+
+        // Tremolo Gain Factor
+        float tremoloGain = 1.0f - (g_tremoloDepth * (0.5f + 0.5f * lfoVal));
+
         float mixedSample = 0.0f;
 
         for (int v = 0; v < MAX_VOICES; v++) {
             if (waveVoices[v].padIndex != -1) {
-                float phaseInc = (128.0f * waveVoices[v].baseFreq) / SAMPLE_RATE;
+                // Pitch Modulation Factor (Vibrato)
+                float pitchFactor = powf(2.0f, (lfoVal * g_vibratoDepth) / 12.0f);
+                float currentFreq = waveVoices[v].baseFreq * pitchFactor;
+
+                float phaseInc = (128.0f * currentFreq) / SAMPLE_RATE;
 
                 int index0 = (int)waveVoices[v].phase1;
                 int index1 = (index0 + 1) % 128;
                 float frac = waveVoices[v].phase1 - index0;
 
                 float sample = customWavetable[index0] + frac * (customWavetable[index1] - customWavetable[index0]);
-                mixedSample += sample * waveVoices[v].amplitude;
+                mixedSample += sample * waveVoices[v].amplitude * tremoloGain;
 
                 waveVoices[v].phase1 += phaseInc;
                 if (waveVoices[v].phase1 >= 128.0f) waveVoices[v].phase1 -= 128.0f;
