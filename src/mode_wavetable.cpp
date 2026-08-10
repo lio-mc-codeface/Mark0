@@ -12,6 +12,7 @@ static AsyncWebServer server(80);
 static AsyncWebSocket ws("/ws");
 
 // HTML + JavaScript Interface embedded in flash memory
+// HTML + JavaScript Interface embedded in flash memory
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
 <html>
@@ -28,7 +29,7 @@ const char index_html[] PROGMEM = R"rawliteral(
             padding: 10px;
             touch-action: none;
         }
-        h2 { margin-bottom: 10px; }
+        h2 { margin-bottom: 8px; }
         canvas {
             background-color: #1e1e1e;
             border: 2px solid #00e5ff;
@@ -39,34 +40,63 @@ const char index_html[] PROGMEM = R"rawliteral(
             max-height: 280px;
             cursor: crosshair;
         }
-        .btn-container { margin-top: 15px; }
+        .controls {
+            max-width: 500px;
+            margin: 15px auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #252525;
+            padding: 10px 15px;
+            border-radius: 8px;
+        }
+        .slider-container label { font-size: 14px; font-weight: bold; }
+        input[type=range] { flex-grow: 1; margin: 0 12px; }
+        .btn-container { display: flex; justify-content: center; gap: 8px; }
         button {
             background: #00e5ff;
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             font-weight: bold;
             border-radius: 5px;
-            margin: 5px;
-            font-size: 16px;
+            font-size: 15px;
         }
     </style>
 </head>
 <body>
     <h2>Tone-ner Wave Drawer</h2>
     <canvas id="waveCanvas" width="128" height="128"></canvas>
-    <div class="btn-container">
-        <button onclick="presetSine()">Sine</button>
-        <button onclick="presetSquare()">Square</button>
-        <button onclick="presetSaw()">Saw</button>
+
+    <div class="controls">
+        <div class="slider-container">
+            <label for="smoothSlider">Smoothing:</label>
+            <input type="range" id="smoothSlider" min="0" max="20" value="0" oninput="applySmoothing()">
+            <span id="smoothVal">0</span>
+        </div>
+
+        <div class="btn-container">
+            <button onclick="presetSine()">Sine</button>
+            <button onclick="presetSquare()">Square</button>
+            <button onclick="presetSaw()">Saw</button>
+        </div>
     </div>
 
     <script>
         const canvas = document.getElementById('waveCanvas');
         const ctx = canvas.getContext('2d');
-        const wave = new Float32Array(128);
+        
+        // rawWave holds the exact original drawn points
+        const rawWave = new Float32Array(128);
+        // processedWave holds the smoothed output sent to ESP32
+        const processedWave = new Float32Array(128);
+        
         let drawing = false;
-
         let websocket = new WebSocket(`ws://${window.location.hostname}/ws`);
 
         function drawGrid() {
@@ -85,7 +115,7 @@ const char index_html[] PROGMEM = R"rawliteral(
             ctx.lineWidth = 2;
             ctx.beginPath();
             for (let x = 0; x < 128; x++) {
-                let y = 64 - (wave[x] * 60);
+                let y = 64 - (processedWave[x] * 60);
                 if (x === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             }
@@ -94,8 +124,31 @@ const char index_html[] PROGMEM = R"rawliteral(
 
         function sendWaveform() {
             if (websocket.readyState === WebSocket.OPEN) {
-                websocket.send(wave.buffer);
+                websocket.send(processedWave.buffer);
             }
+        }
+
+        function applySmoothing() {
+            const passes = parseInt(document.getElementById('smoothSlider').value);
+            document.getElementById('smoothVal').innerText = passes;
+
+            // Copy raw wave
+            processedWave.set(rawWave);
+
+            // Apply circular moving average filter for N passes
+            for (let p = 0; p < passes; p++) {
+                let temp = new Float32Array(128);
+                for (let i = 0; i < 128; i++) {
+                    let prev = processedWave[(i - 1 + 128) % 128];
+                    let curr = processedWave[i];
+                    let next = processedWave[(i + 1) % 128];
+                    temp[i] = (prev + curr + next) / 3.0;
+                }
+                processedWave.set(temp);
+            }
+
+            renderWave();
+            sendWaveform();
         }
 
         function updatePoint(e) {
@@ -110,29 +163,32 @@ const char index_html[] PROGMEM = R"rawliteral(
             let val = 1.0 - (y * 2.0);
             val = Math.max(-1.0, Math.min(1.0, val));
 
-            wave[x] = val;
-            renderWave();
+            // Write into rawWave array
+            rawWave[x] = val;
+            
+            // Recalculate smoothing and transmit
+            applySmoothing();
         }
 
         canvas.addEventListener('mousedown', (e) => { drawing = true; updatePoint(e); });
         canvas.addEventListener('mousemove', (e) => { if (drawing) updatePoint(e); });
-        window.addEventListener('mouseup', () => { if (drawing) { drawing = false; sendWaveform(); } });
+        window.addEventListener('mouseup', () => { if (drawing) drawing = false; });
 
         canvas.addEventListener('touchstart', (e) => { drawing = true; updatePoint(e); e.preventDefault(); });
         canvas.addEventListener('touchmove', (e) => { if (drawing) updatePoint(e); e.preventDefault(); });
-        window.addEventListener('touchend', () => { if (drawing) { drawing = false; sendWaveform(); } });
+        window.addEventListener('touchend', () => { if (drawing) drawing = false; });
 
         function presetSine() {
-            for (let i = 0; i < 128; i++) wave[i] = Math.sin((2 * Math.PI * i) / 128);
-            renderWave(); sendWaveform();
+            for (let i = 0; i < 128; i++) rawWave[i] = Math.sin((2 * Math.PI * i) / 128);
+            applySmoothing();
         }
         function presetSquare() {
-            for (let i = 0; i < 128; i++) wave[i] = i < 64 ? 0.8 : -0.8;
-            renderWave(); sendWaveform();
+            for (let i = 0; i < 128; i++) rawWave[i] = i < 64 ? 0.8 : -0.8;
+            applySmoothing();
         }
         function presetSaw() {
-            for (let i = 0; i < 128; i++) wave[i] = 1.0 - (2.0 * i / 128);
-            renderWave(); sendWaveform();
+            for (let i = 0; i < 128; i++) rawWave[i] = 1.0 - (2.0 * i / 128);
+            applySmoothing();
         }
 
         presetSine();
