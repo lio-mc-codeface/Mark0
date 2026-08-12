@@ -8,6 +8,7 @@
 #include "config.h"
 #include "mode_flute.h"
 #include "mode_wavetable.h"
+#include "mode_sampler.h"
 
 volatile SynthMode currentMode = MODE_FLUTE;
 volatile uint16_t activeTouchMask = 0;
@@ -55,11 +56,17 @@ void uiTask(void *pvParameters) {
             }
         }
 
-        // Long Press Mode Toggle
+        // Long Press Mode Toggle: FLUTE -> WAVETABLE -> SAMPLER -> FLUTE
         if (mask & (1 << LONG_PRESS_PAD)) {
             if (pad11PressStart == 0) pad11PressStart = millis();
             else if (!pad11Handled && (millis() - pad11PressStart >= LONG_PRESS_MS)) {
-                currentMode = (currentMode == MODE_FLUTE) ? MODE_WAVETABLE : MODE_FLUTE;
+                if (currentMode == MODE_FLUTE) {
+                    currentMode = MODE_WAVETABLE;
+                } else if (currentMode == MODE_WAVETABLE) {
+                    currentMode = MODE_SAMPLER;
+                } else {
+                    currentMode = MODE_FLUTE;
+                }
                 pad11Handled = true;
             }
         } else {
@@ -72,8 +79,10 @@ void uiTask(void *pvParameters) {
         // Dispatch UI rendering to active mode
         if (currentMode == MODE_FLUTE) {
             flute_ui_render(display, activeTouchMask);
-        } else {
+        } else if (currentMode == MODE_WAVETABLE) {
             wavetable_ui_render(display);
+        } else if (currentMode == MODE_SAMPLER) {
+            sampler_ui_render(display);
         }
 
         vTaskDelay(pdMS_TO_TICKS(30));
@@ -81,17 +90,19 @@ void uiTask(void *pvParameters) {
 }
 
 void audioTask(void *pvParameters) {
-    size_t bytes_written;
+    int16_t audioBuffer[BUFFER_SIZE * 2];
 
     while (1) {
-        // Dispatch Audio generation to active mode
         if (currentMode == MODE_FLUTE) {
-            flute_audio_process(audio_buffer, activeTouchMask);
-        } else {
-            wavetable_audio_process(audio_buffer, activeTouchMask);
+            flute_audio_process(audioBuffer, activeTouchMask);
+        } else if (currentMode == MODE_WAVETABLE) {
+            wavetable_audio_process(audioBuffer, activeTouchMask);
+        } else if (currentMode == MODE_SAMPLER) {
+            sampler_audio_process(audioBuffer, activeTouchMask);
         }
 
-        i2s_write(I2S_NUM, audio_buffer, sizeof(audio_buffer), &bytes_written, portMAX_DELAY);
+        size_t bytesWritten;
+        i2s_write(I2S_NUM, audioBuffer, sizeof(audioBuffer), &bytesWritten, portMAX_DELAY);
     }
 }
 
@@ -108,6 +119,7 @@ void setup() {
     init_i2s();
     flute_init();
     wavetable_init();
+    sampler_init();
 
     xTaskCreatePinnedToCore(uiTask, "UITask", 4096, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(audioTask, "AudioTask", 4096, NULL, 2, NULL, 1);

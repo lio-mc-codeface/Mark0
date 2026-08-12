@@ -3,17 +3,28 @@
 
 #include <Arduino.h>
 
-// I2S Hardware Pins
+// ============================================================================
+// I2S AUDIO OUTPUT PINS (I2S_NUM_0)
+// ============================================================================
 #define I2S_NUM         I2S_NUM_0
 #define I2S_BCK_PIN     26
 #define I2S_LRC_PIN     25
 #define I2S_DOUT_PIN    17
+
+// ============================================================================
+// I2S MEMS MICROPHONE PINS (I2S_NUM_1)
+// ============================================================================
+#define I2S_MIC_SCK  18  // Serial Clock
+#define I2S_MIC_WS   19  // Word Select / L/R Clock
+#define I2S_MIC_SD   23  // Serial Data In
 
 // OLED Display Configuration
 #define SCREEN_WIDTH    128
 #define SCREEN_HEIGHT   64
 #define OLED_RESET      -1
 #define OLED_ADDRESS    0x3C
+
+
 
 // Touch Configuration
 #define TOUCH_THRESHOLD 12
@@ -38,7 +49,8 @@
 
 enum SynthMode {
     MODE_FLUTE = 0,
-    MODE_WAVETABLE = 1
+    MODE_WAVETABLE = 1,
+    MODE_SAMPLER = 2
 };
 
 struct Voice {

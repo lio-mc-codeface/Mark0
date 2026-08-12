@@ -1,100 +1,65 @@
 #include "mode_flute.h"
+#include <Arduino.h>
 #include <math.h>
-
-#define ATTACK_TIME_MS   120.0f
-#define VIBRATO_SPEED_HZ 5.5f
-#define VIBRATO_DEPTH    0.005f
-#define HARMONIC_2_GAIN  0.15f
-#define HARMONIC_3_GAIN  0.05f
 
 static Voice fluteVoices[MAX_VOICES];
 
 void flute_init() {
     for (int i = 0; i < MAX_VOICES; i++) {
         fluteVoices[i].padIndex = -1;
+        fluteVoices[i].baseFreq = 0.0f;
+        fluteVoices[i].phase1 = 0.0f;
+        fluteVoices[i].phase2 = 0.0f;
+        fluteVoices[i].phase3 = 0.0f;
+        fluteVoices[i].vibratoPhase = 0.0f;
         fluteVoices[i].amplitude = 0.0f;
     }
 }
 
 void flute_ui_render(Adafruit_SSD1306 &display, uint16_t touchMask) {
-    static int prev_y = 42;
-    const char* noteNames[12] = {
-        "C4", "C#4", "D4", "D#4", "E4", "F4", 
-        "F#4", "G4", "G#4", "A4", "A#4", "B4"
-    };
-
     display.clearDisplay();
-    display.setTextSize(2);
+    display.setTextSize(1);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(0, 0);
+    display.print("MODE: FLUTE");
+    display.drawFastHLine(0, 10, 128, SSD1306_WHITE);
 
-    float primaryFreq = 261.63f;
-    bool activeFound = false;
-
-    for (int v = 0; v < MAX_VOICES; v++) {
-        if (fluteVoices[v].padIndex != -1) {
-            if (!activeFound) {
-                primaryFreq = fluteVoices[v].baseFreq;
-                activeFound = true;
-            }
-            display.print(noteNames[fluteVoices[v].padIndex]);
-            display.print(" ");
+    // Active pad indicators
+    display.setCursor(0, 16);
+    display.print("Pads: ");
+    for (uint8_t i = 0; i < 12; i++) {
+        if (touchMask & (1 << i)) {
+            display.printf("%d ", i);
         }
     }
 
-    if (!activeFound) {
-        display.setTextSize(1);
-        display.print("MODE: FLUTE SYNTH");
+    // Active voices count
+    int activeCount = 0;
+    for (int i = 0; i < MAX_VOICES; i++) {
+        if (fluteVoices[i].padIndex != -1) activeCount++;
     }
 
-    display.drawFastHLine(0, 18, 128, SSD1306_WHITE);
+    display.setCursor(0, 36);
+    display.printf("Active Voices: %d/%d", activeCount, MAX_VOICES);
 
-    if (activeFound) {
-        float phaseStep = (2.0f * M_PI * primaryFreq * 2.0f) / (SAMPLE_RATE);
-
-        for (int x = 0; x < SCREEN_WIDTH; x++) {
-            float sampleSum = 0.0f;
-            int voiceCount = 0;
-
-            for (int v = 0; v < MAX_VOICES; v++) {
-                if (fluteVoices[v].padIndex != -1) {
-                    float p1 = (float)x * phaseStep * (fluteVoices[v].baseFreq / primaryFreq);
-                    float s1 = sinf(p1);
-                    float s2 = sinf(p1 * 2.0f) * HARMONIC_2_GAIN;
-                    float s3 = sinf(p1 * 3.0f) * HARMONIC_3_GAIN;
-
-                    sampleSum += (s1 + s2 + s3) * fluteVoices[v].amplitude;
-                    voiceCount++;
-                }
-            }
-
-            if (voiceCount > 0) sampleSum /= voiceCount;
-
-            int y = 42 - (int)(sampleSum * 16.0f);
-            y = constrain(y, 20, 62);
-
-            if (x > 0) {
-                display.drawLine(x - 1, prev_y, x, y, SSD1306_WHITE);
-            } else {
-                prev_y = y;
-            }
-        }
-    }
-
+    display.setCursor(0, 56);
+    display.print("Touch Pads 0-11 to play");
     display.display();
 }
 
 void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
-    const float attackSamples = (ATTACK_TIME_MS / 1000.0f) * SAMPLE_RATE;
-    const float attackStep = 1.0f / attackSamples;
-
+    // 1. Voice Allocation (Trigger notes on touch)
     for (uint8_t pad = 0; pad < 12; pad++) {
         if (touchMask & (1 << pad)) {
-            bool playing = false;
+            bool alreadyPlaying = false;
             for (int v = 0; v < MAX_VOICES; v++) {
-                if (fluteVoices[v].padIndex == pad) { playing = true; break; }
+                if (fluteVoices[v].padIndex == pad) {
+                    alreadyPlaying = true;
+                    break;
+                }
             }
-            if (!playing) {
+
+            if (!alreadyPlaying) {
                 for (int v = 0; v < MAX_VOICES; v++) {
                     if (fluteVoices[v].padIndex == -1) {
                         fluteVoices[v].padIndex = pad;
@@ -103,7 +68,7 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
                         fluteVoices[v].phase2 = 0.0f;
                         fluteVoices[v].phase3 = 0.0f;
                         fluteVoices[v].vibratoPhase = 0.0f;
-                        fluteVoices[v].amplitude = 0.01f;
+                        fluteVoices[v].amplitude = 1.0f;
                         break;
                     }
                 }
@@ -111,47 +76,67 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
         }
     }
 
+    // 2. Voice Release (Release notes when touch ends)
     for (int v = 0; v < MAX_VOICES; v++) {
-        if (fluteVoices[v].padIndex != -1 && !(touchMask & (1 << fluteVoices[v].padIndex))) {
-            fluteVoices[v].padIndex = -1;
-            fluteVoices[v].amplitude = 0.0f;
+        if (fluteVoices[v].padIndex != -1) {
+            uint8_t pad = fluteVoices[v].padIndex;
+            if (!(touchMask & (1 << pad))) {
+                fluteVoices[v].padIndex = -1;
+                fluteVoices[v].amplitude = 0.0f;
+            }
         }
     }
 
+    // 3. Flute Audio Synthesis DSP Loop
     for (int i = 0; i < BUFFER_SIZE; i++) {
         float mixedSample = 0.0f;
+        int activeVoiceCount = 0;
 
         for (int v = 0; v < MAX_VOICES; v++) {
-            if (fluteVoices[v].padIndex != -1) {
-                if (fluteVoices[v].amplitude < 1.0f) {
-                    fluteVoices[v].amplitude += (1.05f - fluteVoices[v].amplitude) * attackStep * 4.0f;
-                    if (fluteVoices[v].amplitude > 1.0f) fluteVoices[v].amplitude = 1.0f;
+            if (fluteVoices[v].amplitude > 0.001f) {
+                activeVoiceCount++;
+
+                // Vibrato (Frequency Modulation)
+                float vibratoLFO = sinf(fluteVoices[v].vibratoPhase);
+                fluteVoices[v].vibratoPhase += (2.0f * M_PI * LFO_RATE_HZ) / SAMPLE_RATE;
+                if (fluteVoices[v].vibratoPhase >= 2.0f * M_PI) {
+                    fluteVoices[v].vibratoPhase -= 2.0f * M_PI;
                 }
 
-                float vibrato = sinf(fluteVoices[v].vibratoPhase) * VIBRATO_DEPTH;
-                fluteVoices[v].vibratoPhase += (2.0f * M_PI * VIBRATO_SPEED_HZ) / SAMPLE_RATE;
-                if (fluteVoices[v].vibratoPhase >= 2.0f * M_PI) fluteVoices[v].vibratoPhase -= 2.0f * M_PI;
+                float freqMod = fluteVoices[v].baseFreq * powf(2.0f, (vibratoLFO * VIBRATO_DEPTH_SEMITONES) / 12.0f);
 
-                float modulatedFreq = fluteVoices[v].baseFreq * (1.0f + vibrato);
-                float phaseInc1 = (2.0f * M_PI * modulatedFreq) / SAMPLE_RATE;
+                // Harmonics for flute timbre
+                float step1 = (2.0f * M_PI * freqMod) / SAMPLE_RATE;
+                float step2 = (2.0f * M_PI * (freqMod * 2.0f)) / SAMPLE_RATE;
+                float step3 = (2.0f * M_PI * (freqMod * 3.0f)) / SAMPLE_RATE;
 
-                float s1 = sinf(fluteVoices[v].phase1);
-                float s2 = sinf(fluteVoices[v].phase2) * HARMONIC_2_GAIN;
-                float s3 = sinf(fluteVoices[v].phase3) * HARMONIC_3_GAIN;
+                fluteVoices[v].phase1 += step1;
+                fluteVoices[v].phase2 += step2;
+                fluteVoices[v].phase3 += step3;
 
-                mixedSample += (s1 + s2 + s3) * fluteVoices[v].amplitude;
-
-                fluteVoices[v].phase1 += phaseInc1;
                 if (fluteVoices[v].phase1 >= 2.0f * M_PI) fluteVoices[v].phase1 -= 2.0f * M_PI;
-                fluteVoices[v].phase2 += phaseInc1 * 2.0f;
                 if (fluteVoices[v].phase2 >= 2.0f * M_PI) fluteVoices[v].phase2 -= 2.0f * M_PI;
-                fluteVoices[v].phase3 += phaseInc1 * 3.0f;
                 if (fluteVoices[v].phase3 >= 2.0f * M_PI) fluteVoices[v].phase3 -= 2.0f * M_PI;
+
+                float sampleVal = sinf(fluteVoices[v].phase1) * 0.70f +
+                                  sinf(fluteVoices[v].phase2) * 0.20f +
+                                  sinf(fluteVoices[v].phase3) * 0.10f;
+
+                // Tremolo (Amplitude Modulation)
+                float tremoloAmp = 1.0f - (TREMOLO_DEPTH * 0.5f * (1.0f + vibratoLFO));
+
+                mixedSample += sampleVal * fluteVoices[v].amplitude * tremoloAmp;
             }
         }
 
-        int16_t sample = (int16_t)(mixedSample * (MASTER_VOLUME / MAX_VOICES));
-        buffer[i * 2]     = sample;
-        buffer[i * 2 + 1] = sample;
+        // Apply headroom division based on MAX_VOICES to avoid integer wrap-around distortion
+        float gainScale = (float)MASTER_VOLUME / (float)MAX_VOICES;
+        float scaledVal = mixedSample * gainScale;
+
+        // Hard clipping protection guard
+        int16_t finalSample = (int16_t)constrain(scaledVal, -32767.0f, 32767.0f);
+
+        buffer[i * 2]     = finalSample; // Left Channel
+        buffer[i * 2 + 1] = finalSample; // Right Channel
     }
 }
