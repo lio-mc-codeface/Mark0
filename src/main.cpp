@@ -1,8 +1,10 @@
 #include <Arduino.h>
 #include <Wire.h>
+#include <SPI.h>
 #include <Adafruit_MPR121.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <Adafruit_GC9A01A.h>
 #include "driver/i2s.h"
 
 #include "config.h"
@@ -10,11 +12,21 @@
 #include "mode_wavetable.h"
 #include "mode_sampler.h"
 
+// ============================================================================
+// GC9A01 SPI DISPLAY PINS (From System Pinout Table)
+// ============================================================================
+#define TFT_CS    14
+#define TFT_DC    16
+#define TFT_RST    2
+#define TFT_BL    15
+
+// Global Objects
 volatile SynthMode currentMode = MODE_FLUTE;
 volatile uint16_t activeTouchMask = 0;
 
 Adafruit_MPR121 cap = Adafruit_MPR121();
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+Adafruit_GC9A01A tft(TFT_CS, TFT_DC, TFT_RST);
 
 int16_t audio_buffer[BUFFER_SIZE * 2];
 
@@ -41,6 +53,35 @@ void init_i2s() {
 
     i2s_driver_install(I2S_NUM, &i2s_config, 0, NULL);
     i2s_set_pin(I2S_NUM, &pin_config);
+}
+
+void init_gc9a01() {
+    pinMode(TFT_BL, OUTPUT);
+    digitalWrite(TFT_BL, HIGH); // Turn on backlight
+
+    // 1. Force Hard-Reset sequence to wake up display driver
+    pinMode(TFT_RST, OUTPUT);
+    digitalWrite(TFT_RST, HIGH);
+    delay(10);
+    digitalWrite(TFT_RST, LOW);
+    delay(50);
+    digitalWrite(TFT_RST, HIGH);
+    delay(120);
+
+    // 2. Explicitly bind Hardware SPI pins (SCLK=13, MISO=-1, MOSI=12, CS=14)
+    SPI.begin(13, -1, 12, 14);
+
+    // 3. Begin TFT initialization
+    tft.begin();
+    tft.setRotation(0);
+    tft.fillScreen(GC9A01A_BLACK);
+
+    // Initial Hello World frame
+    tft.drawCircle(120, 120, 115, GC9A01A_CYAN);
+    tft.setTextColor(GC9A01A_WHITE);
+    tft.setTextSize(2);
+    tft.setCursor(55, 110);
+    tft.print("Hello World");
 }
 
 void uiTask(void *pvParameters) {
@@ -76,7 +117,7 @@ void uiTask(void *pvParameters) {
 
         activeTouchMask = mask;
 
-        // Dispatch UI rendering to active mode
+        // Dispatch UI rendering to active mode for SSD1306 OLED
         if (currentMode == MODE_FLUTE) {
             flute_ui_render(display, activeTouchMask);
         } else if (currentMode == MODE_WAVETABLE) {
@@ -108,6 +149,8 @@ void audioTask(void *pvParameters) {
 
 void setup() {
     Serial.begin(115200);
+
+    // Initialize I2C Bus for SSD1306 & MPR121
     Wire.begin(21, 22);
     Wire.setClock(400000);
 
@@ -116,11 +159,16 @@ void setup() {
 
     cap.begin(0x5A, &Wire);
 
+    // Initialize GC9A01 SPI Display
+    init_gc9a01();
+
+    // Initialize Audio & Synthesizer Engines
     init_i2s();
     flute_init();
     wavetable_init();
     sampler_init();
 
+    // Launch FreeRTOS Tasks
     xTaskCreatePinnedToCore(uiTask, "UITask", 4096, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(audioTask, "AudioTask", 4096, NULL, 2, NULL, 1);
 }

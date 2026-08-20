@@ -14,3 +14,12 @@ Release 0 has the flute with modulation tone generation + screen runing
 ### ⚡ Performance & Memory
 * **Dynamic Heap Allocation:** Replaced static `.bss` DRAM arrays with dynamic `malloc()` allocations to prevent FreeRTOS / ESP32 DRAM memory overflow (`dram0_0_seg`).
 * **DC Bias Filter:** Integrated high-pass filtering and bit-shift alignment to capture crisp, low-noise audio from 24-bit MEMS microphone inputs.
+<<<<<<< HEAD
+=======
+
+# v3.1.0
+Added 1.28"screen + tested hello world
+>>>>>>> b493714 (Update README for v0.2.0 release with GC9A01 screen support and sampler specs)
+
+# v3.3.0
+added master volume control
