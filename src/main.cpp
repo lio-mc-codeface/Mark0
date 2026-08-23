@@ -9,6 +9,7 @@
 #include "driver/i2s.h"
 
 #include "config.h"
+#include "boot_logo.h"
 #include "mode_flute.h"
 #include "mode_wavetable.h"
 #include "mode_sampler.h"
@@ -119,12 +120,8 @@ void init_gc9a01() {
     tft.setRotation(0);
     tft.fillScreen(GC9A01A_BLACK);
 
-    // Initial Hello World frame
-    tft.drawCircle(120, 120, 115, GC9A01A_CYAN);
-    tft.setTextColor(GC9A01A_WHITE);
-    tft.setTextSize(2);
-    tft.setCursor(55, 110);
-    tft.print("Hello World");
+    // Draw the 240x240 boot logo from flash.
+    tft.drawRGBBitmap(0, 0, bootLogo, 240, 240);
 }
 
 void init_st7735() {
@@ -133,11 +130,41 @@ void init_st7735() {
     tft2.initR(INITR_BLACKTAB);
     tft2.setRotation(1);
     tft2.invertDisplay(false);
-    tft2.fillScreen(ST77XX_BLACK);
-    tft2.setTextColor(ST77XX_WHITE);
-    tft2.setTextSize(2);
-    tft2.setCursor(28, 56);
-    tft2.print("Hello World");
+
+    // Draw a dark-blue through cyan/green to golden-yellow spectrum.
+    for (int y = 0; y < 128; y++) {
+        float progress = (float)y / 127.0f;
+        float hue = 240.0f - (195.0f * progress);
+        float chroma = 1.0f;
+        float hueSection = hue / 60.0f;
+        float second = chroma * (1.0f - fabsf(fmodf(hueSection, 2.0f) - 1.0f));
+        float red = 0.0f;
+        float green = 0.0f;
+        float blue = 0.0f;
+
+        if (hue < 60.0f) {
+            red = chroma;
+            green = second;
+        } else if (hue < 120.0f) {
+            red = second;
+            green = chroma;
+        } else if (hue < 180.0f) {
+            green = chroma;
+            blue = second;
+        } else if (hue < 240.0f) {
+            green = second;
+            blue = chroma;
+        } else {
+            blue = chroma;
+        }
+
+        float brightness = 0.25f + (0.75f * progress);
+        uint16_t color = tft2.color565(
+            (uint8_t)(red * 255.0f * brightness),
+            (uint8_t)(green * 255.0f * brightness),
+            (uint8_t)(blue * 255.0f * brightness));
+        tft2.drawFastHLine(0, y, 160, color);
+    }
 }
 
 void uiTask(void *pvParameters) {
