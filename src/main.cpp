@@ -5,6 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GC9A01A.h>
+#include <Adafruit_ST7735.h>
 #include "driver/i2s.h"
 
 #include "config.h"
@@ -20,6 +21,7 @@ uint16_t restingCapacitance[12] = {0};
 Adafruit_MPR121 cap = Adafruit_MPR121();
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_GC9A01A tft(TFT1_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
+Adafruit_ST7735 tft2(TFT2_CS_PIN, TFT_DC_PIN, TFT2_RST_PIN);
 
 void init_gpio() {
     // Peripherals
@@ -112,9 +114,6 @@ void init_gc9a01() {
     digitalWrite(TFT_RST_PIN, HIGH);
     delay(120);
 
-    // Bind Hardware SPI pins (SCLK=18, MISO=19, MOSI=23, CS=14)
-    SPI.begin(SPI_SCLK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN, TFT1_CS_PIN);
-
     // Begin TFT initialization
     tft.begin();
     tft.setRotation(0);
@@ -126,6 +125,19 @@ void init_gc9a01() {
     tft.setTextSize(2);
     tft.setCursor(55, 110);
     tft.print("Hello World");
+}
+
+void init_st7735() {
+    // TFT2 has its own reset line; CS was held HIGH in init_gpio().
+    // The 0.96-inch panel is the common 128x160 ST7735 variant.
+    tft2.initR(INITR_BLACKTAB);
+    tft2.setRotation(1);
+    tft2.invertDisplay(false);
+    tft2.fillScreen(ST77XX_BLACK);
+    tft2.setTextColor(ST77XX_WHITE);
+    tft2.setTextSize(2);
+    tft2.setCursor(28, 56);
+    tft2.print("Hello World");
 }
 
 void uiTask(void *pvParameters) {
@@ -221,7 +233,11 @@ void setup() {
 
     cap.begin(0x5A, &Wire, 1, 1);
 
-    // Initialize GC9A01 SPI Display
+    // Bind the shared hardware SPI bus before initializing either display.
+    SPI.begin(SPI_SCLK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN, TFT1_CS_PIN);
+
+    // Initialize both displays independently on the shared SPI bus.
+    init_st7735();
     init_gc9a01();
 
     // Initialize Both I2S Engines (DAC output + Mic input)

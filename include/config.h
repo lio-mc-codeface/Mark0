@@ -34,6 +34,7 @@
 // Shared Display Control Lines
 #define TFT_DC_PIN      16  // Shared Data/Command
 #define TFT_RST_PIN     2   // Shared Hardware Reset
+#define TFT2_RST_PIN    33  // ST7735 reset; separate from GC9A01 reset
 
 // ============================================================================
 // PERIPHERALS & INTERRUPTS

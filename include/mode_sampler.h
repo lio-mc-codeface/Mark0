@@ -5,6 +5,9 @@
 #include "config.h"
 
 // 32768 samples = ~0.74s at 44.1kHz (64 KB dynamic Heap allocation)
+
+// Define the sample buffer size
+// 32768 samples = ~0.74s at 44.1kHz (64 KB dynamic Heap allocation)
 #define SAMPLE_BUFFER_SIZE 32768
 
 void sampler_init();

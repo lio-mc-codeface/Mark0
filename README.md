@@ -40,7 +40,7 @@ flash and are not available for project wiring.
 | :-: | :-: | :-: | :--- |
 | 1 | **3V3** | **3V3** | **3.3V system power rail for OLED, TFTs, SD card, MPR121, and INMP441** |
 | 2 | **GND** | **GND** | **System ground rail** |
-| 3 | **D15** | **GPIO 15** | **TFT2/ST7789 chip select; boot-strapping pin; TFT2 currently unused** |
+| 3 | **D15** | **GPIO 15** | **TFT2/ST7735 chip select; boot-strapping pin** |
 | 4 | **D2** | **GPIO 2** | **Shared TFT hardware reset; boot-strapping pin** |
 | 5 | **D4** | **GPIO 4** | **INMP441 I2S word select/LRCLK; reserved exclusively for microphone I2S** |
 | 6 | **RX2** | **GPIO 16** | **Shared TFT data/command line; available on WROOM without PSRAM** |
@@ -59,7 +59,7 @@ flash and are not available for project wiring.
 | 19 | **D34** | **GPIO 34** | **Free; input-only; external pull-up required for future switch/button use** |
 | 20 | **D35** | **GPIO 35** | **INMP441 I2S serial data input; input-only** |
 | 21 | **D32** | **GPIO 32** | **Free; recommended future WS28xx LED data pin** |
-| 22 | **D33** | **GPIO 33** | **Free; future control pin** |
+| 22 | **D33** | **GPIO 33** | **ST7735/TFT2 hardware reset; separate from GC9A01 reset** |
 | 23 | **D27** | **GPIO 27** | **INMP441 I2S bit clock/BCLK** |
 | 24 | **D26** | **GPIO 26** | **MAX98357A I2S bit clock/BCLK** |
 | 25 | **D25** | **GPIO 25** | **MAX98357A I2S word select/LRCLK** |
@@ -80,10 +80,12 @@ flash and are not available for project wiring.
 - **SPI and uploading:** GPIO 18, 19, 23, 13, and 14 can remain connected while
 	uploading. They are separate from the ESP32 internal flash pins GPIO 6-11.
 	The SD card and displays must remain deselected while the board resets.
-- **TFT2/ST7789:** GPIO 15 is a boot-strapping pin. Delaying TFT2 initialization
-	until after boot is possible, but it does not remove the need for TFT2 CS and
-	attached circuitry to stay inactive during reset. TFT2 is currently unused.
+- **TFT2/ST7735:** GPIO 15 is the chip select and GPIO 33 is its separate reset.
+	The display can be initialized and operated independently while sharing SPI
+	clock, MOSI, and data/command with the GC9A01. Keep GPIO 15 inactive during
+	reset because it is a boot-strapping pin.
 - **GPIO 34, 36, and 39:** these pins are input-only and have no internal
 	pull-ups. Add external pull-ups when future controls are connected.
+- **GPIO 12:** this is a boot-strapping pin, so it remains deliberately unused.
 - **Board assumption:** this map assumes the pictured classic ESP32-WROOM-32
 	board without PSRAM. It should be rechecked if the physical board changes.
