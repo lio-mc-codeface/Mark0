@@ -89,3 +89,6 @@ flash and are not available for project wiring.
 - **GPIO 12:** this is a boot-strapping pin, so it remains deliberately unused.
 - **Board assumption:** this map assumes the pictured classic ESP32-WROOM-32
 	board without PSRAM. It should be rechecked if the physical board changes.
+
+	24-8-
+	I will change the irq addres of the mrn121 to the scl pin making it 0x5D, this wil free up other adreses of other mrn's in the future, since im low on inputs anyways
