@@ -18,6 +18,7 @@
 // Global Objects
 volatile SynthMode currentMode = MODE_FLUTE;
 volatile uint16_t activeTouchMask = 0;
+volatile uint8_t analogButtonState = 0;
 uint16_t restingCapacitance[12] = {0};
 
 Adafruit_MPR121 cap = Adafruit_MPR121();
@@ -282,6 +283,34 @@ void update_live_displays() {
     }
 }
 
+uint8_t read_debounced_buttons() {
+    static uint8_t stableState = 0;
+    static uint8_t candidateState = 0;
+    static unsigned long candidateSince = 0;
+
+    int millivolts = analogReadMilliVolts(BUTTON_ADC_PIN);
+    uint8_t currentState;
+    if (millivolts < BUTTON_BOTH_MAX_MV) {
+        currentState = 3;
+    } else if (millivolts < BUTTON1_MAX_MV) {
+        currentState = 1;
+    } else if (millivolts < BUTTON2_MAX_MV) {
+        currentState = 2;
+    } else {
+        currentState = 0;
+    }
+
+    if (currentState != candidateState) {
+        candidateState = currentState;
+        candidateSince = millis();
+    } else if (currentState != stableState &&
+               millis() - candidateSince >= BUTTON_DEBOUNCE_MS) {
+        stableState = currentState;
+    }
+
+    return stableState;
+}
+
 void uiTask(void *pvParameters) {
     unsigned long pad11PressStart = 0;
     bool pad11Handled = false;
@@ -327,6 +356,7 @@ void uiTask(void *pvParameters) {
         }
 
         activeTouchMask = mask;
+        analogButtonState = read_debounced_buttons();
 
         // Dispatch UI rendering to active mode for SSD1306 OLED
         if (currentMode == MODE_FLUTE) {

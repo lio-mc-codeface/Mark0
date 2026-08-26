@@ -39,8 +39,25 @@
 // ============================================================================
 // PERIPHERALS & INTERRUPTS
 // ============================================================================
-#define LED_DATA_PIN    4   // WS28xx LED Strip
+#define LED_DATA_PIN    12  // WS28xx LED Strip
 #define MPR121_IRQ_PIN  5   // Touch Controller Active-Low IRQ
+
+// Rotary encoder (external resistors provide the input bias)
+#define ENCODER_SW_PIN  34  // Encoder push button
+#define ENCODER_A_PIN   39  // Encoder channel A (VN)
+#define ENCODER_B_PIN   36  // Encoder channel B (VP)
+
+// Two-button resistor ladder test input
+#define BUTTON_ADC_PIN  32  // ADC1 input for two analog push buttons
+#define BUTTON_PULLUP_OHMS  10000  // GPIO32 pull-up to 3V3
+#define BUTTON1_RESISTOR_OHMS  10000  // Button 1 series resistor to GND
+#define BUTTON2_RESISTOR_OHMS  20000  // Button 2 series resistor to GND
+
+// Millivolt thresholds between the expected resistor-ladder levels.
+#define BUTTON_BOTH_MAX_MV  1485
+#define BUTTON1_MAX_MV      1925
+#define BUTTON2_MAX_MV      2750
+#define BUTTON_DEBOUNCE_MS  30
 
 // ============================================================================
 // I2C PERIPHERALS (SSD1306 OLED Screen #3 & MPR121)
