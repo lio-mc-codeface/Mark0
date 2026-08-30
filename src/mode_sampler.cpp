@@ -20,6 +20,8 @@ struct SamplerVoice {
     float samplePosition = 0.0f;
     float playbackSpeed = 1.0f;
     bool active = false;
+    float amplitude = 0.0f;          // soft attack/release
+    float targetAmplitude = 0.0f;    // soft attack/release
     int32_t cacheBlock = -1;
     uint16_t cachedSamples = 0;
     int16_t cache[SAMPLE_CACHE_SIZE];
@@ -93,6 +95,8 @@ void sampler_init() {
     for (int i = 0; i < MAX_VOICES; i++) {
         samplerVoices[i].padIndex = -1;
         samplerVoices[i].active = false;
+        samplerVoices[i].amplitude = 0.0f;
+        samplerVoices[i].targetAmplitude = 0.0f;
         samplerVoices[i].cacheBlock = -1;
     }
     if (currentSampleLength == 0) generate_default_tone();
@@ -124,6 +128,8 @@ void sampler_ui_render(Adafruit_SSD1306 &display) {
 
 void sampler_audio_process(int16_t *buffer, uint16_t touchMask) {
     bool recPressed = (touchMask & (1 << 0)) != 0;
+
+    // ========== RECORDING ==========
     if (recPressed) {
         if (!isRecording) {
             if (!sdReady) {
@@ -142,27 +148,36 @@ void sampler_audio_process(int16_t *buffer, uint16_t touchMask) {
             sampleFile.write(emptyHeader, sizeof(emptyHeader));
             recordedBytes = 0;
             isRecording = true;
-            for (int v = 0; v < MAX_VOICES; v++) samplerVoices[v].active = false;
+            for (int v = 0; v < MAX_VOICES; v++) {
+                samplerVoices[v].active = false;
+                samplerVoices[v].amplitude = 0.0f;
+                samplerVoices[v].targetAmplitude = 0.0f;
+            }
         }
+
         int32_t rawMicData[BUFFER_SIZE];
         int16_t pcmBlock[BUFFER_SIZE];
         size_t bytesRead = 0;
         i2s_read(I2S_MIC_NUM, rawMicData, sizeof(rawMicData), &bytesRead, 0);
         uint32_t samplesRead = bytesRead / sizeof(int32_t);
+
         static float dcOffset = 0.0f;
         for (uint32_t i = 0; i < samplesRead; i++) {
             float pcmSample = (float)(rawMicData[i] >> 14);
             dcOffset = dcOffset * 0.95f + pcmSample * 0.05f;
-            pcmBlock[i] = (int16_t)constrain((pcmSample - dcOffset) * 2.5f,
-                                              -32767.0f, 32767.0f);
+            pcmBlock[i] = (int16_t)constrain((pcmSample - dcOffset) * 2.5f, -32767.0f, 32767.0f);
         }
+
         if (samplesRead > 0) {
             sampleFile.write((uint8_t *)pcmBlock, samplesRead * sizeof(int16_t));
             recordedBytes += samplesRead * sizeof(int16_t);
         }
+
         memset(buffer, 0, BUFFER_SIZE * 2 * sizeof(int16_t));
         return;
     }
+
+    // Stop recording
     if (isRecording) {
         isRecording = false;
         if (sampleFile) {
@@ -178,9 +193,13 @@ void sampler_audio_process(int16_t *buffer, uint16_t touchMask) {
         }
     }
 
+    // ========== PLAYBACK ==========
     float rootFreq = noteFreqs[1];
+
+    // Voice allocation
     for (uint8_t pad = 1; pad < 12; pad++) {
         if (!(touchMask & (1 << pad))) continue;
+
         bool playing = false;
         for (int v = 0; v < MAX_VOICES; v++) {
             if (samplerVoices[v].padIndex == pad && samplerVoices[v].active) {
@@ -188,6 +207,7 @@ void sampler_audio_process(int16_t *buffer, uint16_t touchMask) {
                 break;
             }
         }
+
         if (!playing) {
             for (int v = 0; v < MAX_VOICES; v++) {
                 if (!samplerVoices[v].active) {
@@ -195,43 +215,82 @@ void sampler_audio_process(int16_t *buffer, uint16_t touchMask) {
                     samplerVoices[v].samplePosition = 0.0f;
                     samplerVoices[v].playbackSpeed = noteFreqs[pad] / rootFreq;
                     samplerVoices[v].active = true;
+                    samplerVoices[v].amplitude = 0.0f;
+                    samplerVoices[v].targetAmplitude = 1.0f;   // soft attack
                     samplerVoices[v].cacheBlock = -1;
                     break;
                 }
             }
         }
     }
+
+    // Voice release
     for (int v = 0; v < MAX_VOICES; v++) {
         if (samplerVoices[v].active) {
             uint8_t pad = samplerVoices[v].padIndex;
             if (pad < 12 && !(touchMask & (1 << pad))) {
-                samplerVoices[v].active = false;
-                samplerVoices[v].padIndex = -1;
+                samplerVoices[v].targetAmplitude = 0.0f;   // soft release
             }
         }
     }
+
+    // DSP loop
     for (int i = 0; i < BUFFER_SIZE; i++) {
         float mixedSample = 0.0f;
+        int activeVoiceCount = 0;
+
         for (int v = 0; v < MAX_VOICES; v++) {
             if (!samplerVoices[v].active) continue;
+
+            // Soft attack / release
+            const float ampSpeed = 0.0025f;
+
+            if (samplerVoices[v].amplitude < samplerVoices[v].targetAmplitude) {
+                samplerVoices[v].amplitude += ampSpeed;
+                if (samplerVoices[v].amplitude > samplerVoices[v].targetAmplitude)
+                    samplerVoices[v].amplitude = samplerVoices[v].targetAmplitude;
+            } else if (samplerVoices[v].amplitude > samplerVoices[v].targetAmplitude) {
+                samplerVoices[v].amplitude -= ampSpeed;
+                if (samplerVoices[v].amplitude < samplerVoices[v].targetAmplitude)
+                    samplerVoices[v].amplitude = samplerVoices[v].targetAmplitude;
+            }
+
+            // Free voice when fully faded out
+            if (samplerVoices[v].targetAmplitude <= 0.0f && samplerVoices[v].amplitude < 0.001f) {
+                samplerVoices[v].active = false;
+                samplerVoices[v].padIndex = -1;
+                continue;
+            }
+
+            if (samplerVoices[v].amplitude < 0.001f) continue;
+
+            activeVoiceCount++;
+
             uint32_t index0 = (uint32_t)samplerVoices[v].samplePosition;
             uint32_t index1 = index0 + 1;
+
             if (index0 >= currentSampleLength) {
                 samplerVoices[v].active = false;
                 continue;
             }
+
             float fraction = samplerVoices[v].samplePosition - index0;
-            float sample0 = sdSampleLoaded ? read_sample(samplerVoices[v], index0)
-                                    : sampleBuffer[index0];
-            float sample1 = index1 < currentSampleLength
-                                ? (sdSampleLoaded ? read_sample(samplerVoices[v], index1)
-                                           : sampleBuffer[index1])
+            float sample0 = sdSampleLoaded ? read_sample(samplerVoices[v], index0) : sampleBuffer[index0];
+            float sample1 = (index1 < currentSampleLength)
+                                ? (sdSampleLoaded ? read_sample(samplerVoices[v], index1) : sampleBuffer[index1])
                                 : 0.0f;
-            mixedSample += sample0 + fraction * (sample1 - sample0);
+
+            float sample = sample0 + fraction * (sample1 - sample0);
+            mixedSample += sample * samplerVoices[v].amplitude;
+
             samplerVoices[v].samplePosition += samplerVoices[v].playbackSpeed;
         }
-        int16_t sample = (int16_t)(mixedSample * (MASTER_VOLUME / MAX_VOICES) / 8000.0f);
-        buffer[i * 2] = sample;
+
+        float voiceScale = (activeVoiceCount > 0) ? (1.0f / activeVoiceCount) : 1.0f;
+        float gain = (float)MASTER_VOLUME * voiceScale / 8000.0f * 0.85f;
+
+        int16_t sample = (int16_t)constrain(mixedSample * gain, -32767.0f, 32767.0f);
+        buffer[i * 2]     = sample;
         buffer[i * 2 + 1] = sample;
     }
 }

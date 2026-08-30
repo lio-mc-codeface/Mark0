@@ -13,6 +13,7 @@ void flute_init() {
         fluteVoices[i].phase3 = 0.0f;
         fluteVoices[i].vibratoPhase = 0.0f;
         fluteVoices[i].amplitude = 0.0f;
+        fluteVoices[i].targetAmplitude = 0.0f;
     }
 }
 
@@ -24,7 +25,6 @@ void flute_ui_render(Adafruit_SSD1306 &display, uint16_t touchMask) {
     display.print("MODE: FLUTE");
     display.drawFastHLine(0, 10, 128, SSD1306_WHITE);
 
-    // Active pad indicators
     display.setCursor(0, 16);
     display.print("Pads: ");
     for (uint8_t i = 0; i < 12; i++) {
@@ -33,7 +33,6 @@ void flute_ui_render(Adafruit_SSD1306 &display, uint16_t touchMask) {
         }
     }
 
-    // Active voices count
     int activeCount = 0;
     for (int i = 0; i < MAX_VOICES; i++) {
         if (fluteVoices[i].padIndex != -1) activeCount++;
@@ -48,7 +47,7 @@ void flute_ui_render(Adafruit_SSD1306 &display, uint16_t touchMask) {
 }
 
 void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
-    // 1. Voice Allocation (Trigger notes on touch)
+    // 1. Voice Allocation
     for (uint8_t pad = 0; pad < 12; pad++) {
         if (touchMask & (1 << pad)) {
             bool alreadyPlaying = false;
@@ -68,7 +67,8 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
                         fluteVoices[v].phase2 = 0.0f;
                         fluteVoices[v].phase3 = 0.0f;
                         fluteVoices[v].vibratoPhase = 0.0f;
-                        fluteVoices[v].amplitude = 1.0f;
+                        fluteVoices[v].amplitude = 0.0f;
+                        fluteVoices[v].targetAmplitude = 1.0f;  // soft attack target
                         break;
                     }
                 }
@@ -76,39 +76,61 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
         }
     }
 
-    // 2. Voice Release (Release notes when touch ends)
+    // 2. Voice Release
     for (int v = 0; v < MAX_VOICES; v++) {
         if (fluteVoices[v].padIndex != -1) {
             uint8_t pad = fluteVoices[v].padIndex;
             if (!(touchMask & (1 << pad))) {
-                fluteVoices[v].padIndex = -1;
-                fluteVoices[v].amplitude = 0.0f;
+                fluteVoices[v].targetAmplitude = 0.0f;  // soft release
             }
         }
     }
 
-    // 3. Flute Audio Synthesis DSP Loop
+    // 3. DSP Loop
     for (int i = 0; i < BUFFER_SIZE; i++) {
         float mixedSample = 0.0f;
         int activeVoiceCount = 0;
 
         for (int v = 0; v < MAX_VOICES; v++) {
+            // Soft attack / release
+            const float ampSpeed = 0.001f;  // adjust for faster/slower fade
+
+            if (fluteVoices[v].amplitude < fluteVoices[v].targetAmplitude) {
+                fluteVoices[v].amplitude += ampSpeed;
+                if (fluteVoices[v].amplitude > fluteVoices[v].targetAmplitude) {
+                    fluteVoices[v].amplitude = fluteVoices[v].targetAmplitude;
+                }
+            } else if (fluteVoices[v].amplitude > fluteVoices[v].targetAmplitude) {
+                fluteVoices[v].amplitude -= ampSpeed;
+                if (fluteVoices[v].amplitude < fluteVoices[v].targetAmplitude) {
+                    fluteVoices[v].amplitude = fluteVoices[v].targetAmplitude;
+                }
+            }
+
+            // Free voice when fully faded out
+            if (fluteVoices[v].padIndex != -1 &&
+                fluteVoices[v].targetAmplitude <= 0.0f &&
+                fluteVoices[v].amplitude < 0.001f) {
+                fluteVoices[v].padIndex = -1;
+            }
+
             if (fluteVoices[v].amplitude > 0.001f) {
                 activeVoiceCount++;
 
-                // Vibrato (Frequency Modulation)
+                // Vibrato
                 float vibratoLFO = sinf(fluteVoices[v].vibratoPhase);
                 fluteVoices[v].vibratoPhase += (2.0f * M_PI * LFO_RATE_HZ) / SAMPLE_RATE;
                 if (fluteVoices[v].vibratoPhase >= 2.0f * M_PI) {
                     fluteVoices[v].vibratoPhase -= 2.0f * M_PI;
                 }
 
-                float freqMod = fluteVoices[v].baseFreq * powf(2.0f, (vibratoLFO * VIBRATO_DEPTH_SEMITONES) / 12.0f);
+                float freqMod = fluteVoices[v].baseFreq *
+                                powf(2.0f, (vibratoLFO * VIBRATO_DEPTH_SEMITONES) / 12.0f);
 
-                // Harmonics for flute timbre
+                // Harmonics
                 float step1 = (2.0f * M_PI * freqMod) / SAMPLE_RATE;
-                float step2 = (2.0f * M_PI * (freqMod * 2.0f)) / SAMPLE_RATE;
-                float step3 = (2.0f * M_PI * (freqMod * 3.0f)) / SAMPLE_RATE;
+                float step2 = (2.0f * M_PI * freqMod * 2.0f) / SAMPLE_RATE;
+                float step3 = (2.0f * M_PI * freqMod * 3.0f) / SAMPLE_RATE;
 
                 fluteVoices[v].phase1 += step1;
                 fluteVoices[v].phase2 += step2;
@@ -122,21 +144,21 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
                                   sinf(fluteVoices[v].phase2) * 0.20f +
                                   sinf(fluteVoices[v].phase3) * 0.10f;
 
-                // Tremolo (Amplitude Modulation)
+                // Tremolo
                 float tremoloAmp = 1.0f - (TREMOLO_DEPTH * 0.5f * (1.0f + vibratoLFO));
 
                 mixedSample += sampleVal * fluteVoices[v].amplitude * tremoloAmp;
             }
         }
 
-        // Apply headroom division based on MAX_VOICES to avoid integer wrap-around distortion
-        float gainScale = (float)MASTER_VOLUME / (float)MAX_VOICES;
-        float scaledVal = mixedSample * gainScale;
+        // Gain with extra headroom
+        float voiceScale = (activeVoiceCount > 0) ? (1.0f / activeVoiceCount) : 1.0f;
+        float gainScale = (float)MASTER_VOLUME * voiceScale * 0.85f;
 
-        // Hard clipping protection guard
+        float scaledVal = mixedSample * gainScale;
         int16_t finalSample = (int16_t)constrain(scaledVal, -32767.0f, 32767.0f);
 
-        buffer[i * 2]     = finalSample; // Left Channel
-        buffer[i * 2 + 1] = finalSample; // Right Channel
+        buffer[i * 2]     = finalSample;
+        buffer[i * 2 + 1] = finalSample;
     }
 }

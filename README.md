@@ -78,3 +78,13 @@ New pinout to resolve conflicitng pins
 
 	24-8-
 	I will change the irq addres of the mrn121 to the scl pin making it 0x5D, this wil free up other adreses of other mrn's in the future, since im low on inputs anyways
+
+## v4.4.0 screen from 7735->7789
+## v4.5.0 boot screen for the 7789 i belive
+## v4.6.1 – Pop Eradicated
+
+### Fixed
+- Soft attack & soft release on all synth modes (Flute, Wavetable, Sampler)
+- Eliminated note-on / note-off clicks and pops
+- Removed volume jumps when adding extra notes in Wavetable mode
+- Improved overall polyphony cleanliness

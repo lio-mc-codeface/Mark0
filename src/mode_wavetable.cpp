@@ -324,6 +324,7 @@ void wavetable_init() {
     for (int i = 0; i < MAX_VOICES; i++) {
         waveVoices[i].padIndex = -1;
         waveVoices[i].amplitude = 0.0f;
+        waveVoices[i].targetAmplitude = 0.0f;
     }
 
     WiFi.softAP("Tone-ner-Synth");
@@ -370,12 +371,15 @@ static float lfoPhase = 0.0f;
 void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
     ws.cleanupClients();
 
-    // 1. Touch Pad Voice Allocation
+    // 1. Voice Allocation
     for (uint8_t pad = 0; pad < 12; pad++) {
         if (touchMask & (1 << pad)) {
             bool playing = false;
             for (int v = 0; v < MAX_VOICES; v++) {
-                if (waveVoices[v].padIndex == pad) { playing = true; break; }
+                if (waveVoices[v].padIndex == pad) {
+                    playing = true;
+                    break;
+                }
             }
             if (!playing) {
                 for (int v = 0; v < MAX_VOICES; v++) {
@@ -383,7 +387,8 @@ void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
                         waveVoices[v].padIndex = pad;
                         waveVoices[v].baseFreq = noteFreqs[pad];
                         waveVoices[v].phase1 = 0.0f;
-                        waveVoices[v].amplitude = 1.0f;
+                        waveVoices[v].amplitude = 0.0f;
+                        waveVoices[v].targetAmplitude = 1.0f;   // soft attack
                         break;
                     }
                 }
@@ -391,41 +396,60 @@ void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
         }
     }
 
+    // 2. Voice Release
     for (int v = 0; v < MAX_VOICES; v++) {
         if (waveVoices[v].padIndex != -1 && !(touchMask & (1 << waveVoices[v].padIndex))) {
-            waveVoices[v].padIndex = -1;
-            waveVoices[v].amplitude = 0.0f;
+            waveVoices[v].targetAmplitude = 0.0f;   // soft release
         }
     }
 
-    // 2. Dynamic Audio Processing
+    // 3. DSP
     float lfoInc = g_lfoRateHz / (float)SAMPLE_RATE;
 
     for (int i = 0; i < BUFFER_SIZE; i++) {
-        // Calculate Sine LFO (-1.0 to 1.0)
         float lfoVal = sinf(2.0f * M_PI * lfoPhase);
-
         lfoPhase += lfoInc;
         if (lfoPhase >= 1.0f) lfoPhase -= 1.0f;
 
-        // Tremolo Gain Factor
         float tremoloGain = 1.0f - (g_tremoloDepth * (0.5f + 0.5f * lfoVal));
-
         float mixedSample = 0.0f;
+        int activeVoiceCount = 0;
 
         for (int v = 0; v < MAX_VOICES; v++) {
-            if (waveVoices[v].padIndex != -1) {
-                // Pitch Modulation Factor (Vibrato)
+            // Soft attack / release
+            const float ampSpeed = 0.0025f;
+
+            if (waveVoices[v].amplitude < waveVoices[v].targetAmplitude) {
+                waveVoices[v].amplitude += ampSpeed;
+                if (waveVoices[v].amplitude > waveVoices[v].targetAmplitude)
+                    waveVoices[v].amplitude = waveVoices[v].targetAmplitude;
+            } else if (waveVoices[v].amplitude > waveVoices[v].targetAmplitude) {
+                waveVoices[v].amplitude -= ampSpeed;
+                if (waveVoices[v].amplitude < waveVoices[v].targetAmplitude)
+                    waveVoices[v].amplitude = waveVoices[v].targetAmplitude;
+            }
+
+            // Free voice when fully silent
+            if (waveVoices[v].padIndex != -1 &&
+                waveVoices[v].targetAmplitude <= 0.0f &&
+                waveVoices[v].amplitude < 0.001f) {
+                waveVoices[v].padIndex = -1;
+            }
+
+            if (waveVoices[v].amplitude > 0.001f) {
+                activeVoiceCount++;
+
                 float pitchFactor = powf(2.0f, (lfoVal * g_vibratoDepth) / 12.0f);
                 float currentFreq = waveVoices[v].baseFreq * pitchFactor;
-
                 float phaseInc = (128.0f * currentFreq) / SAMPLE_RATE;
 
                 int index0 = (int)waveVoices[v].phase1;
                 int index1 = (index0 + 1) % 128;
                 float frac = waveVoices[v].phase1 - index0;
 
-                float sample = customWavetable[index0] + frac * (customWavetable[index1] - customWavetable[index0]);
+                float sample = customWavetable[index0] +
+                               frac * (customWavetable[index1] - customWavetable[index0]);
+
                 mixedSample += sample * waveVoices[v].amplitude * tremoloGain;
 
                 waveVoices[v].phase1 += phaseInc;
@@ -433,7 +457,10 @@ void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
             }
         }
 
-        int16_t sample = (int16_t)(mixedSample * (MASTER_VOLUME / MAX_VOICES));
+// Constant headroom – no volume jump when adding/removing notes
+float gainScale = (float)MASTER_VOLUME / (float)MAX_VOICES * 0.85f;
+
+        int16_t sample = (int16_t)constrain(mixedSample * gainScale, -32767.0f, 32767.0f);
         buffer[i * 2]     = sample;
         buffer[i * 2 + 1] = sample;
     }

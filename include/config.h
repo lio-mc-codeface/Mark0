@@ -15,9 +15,9 @@
 // I2S MEMS MICROPHONE PINS (I2S_NUM_1)
 // ============================================================================
 #define I2S_MIC_NUM     I2S_NUM_1
-#define I2S_MIC_SCK     27  // Serial Clock Out
-#define I2S_MIC_WS      4   // Word Select Out (keep dedicated to mic I2S)
-#define I2S_MIC_SD      35  // Serial Data In (Dedicated GPI Pin)
+#define I2S_MIC_SCK     27
+#define I2S_MIC_WS      4
+#define I2S_MIC_SD      35
 
 // ============================================================================
 // SHARED HARDWARE SPI BUS
@@ -32,35 +32,34 @@
 #define SD_CS_PIN       13  // SD Card Reader
 
 // Shared Display Control Lines
-#define TFT_DC_PIN      16  // Shared Data/Command
-#define TFT_RST_PIN     2   // Shared Hardware Reset
-#define TFT2_RST_PIN    33  // ST7789 reset; separate from GC9A01 reset
+#define TFT_DC_PIN      16
+#define TFT_RST_PIN     2
+#define TFT2_RST_PIN    33
 
 // ============================================================================
 // PERIPHERALS & INTERRUPTS
 // ============================================================================
-#define LED_DATA_PIN    12  // WS28xx LED Strip
-#define MPR121_IRQ_PIN  5   // Touch Controller Active-Low IRQ
+#define LED_DATA_PIN    12
+#define MPR121_IRQ_PIN  5
 
-// Rotary encoder (external resistors provide the input bias)
-#define ENCODER_SW_PIN  34  // Encoder push button
-#define ENCODER_A_PIN   39  // Encoder channel A (VN)
-#define ENCODER_B_PIN   36  // Encoder channel B (VP)
+// Rotary encoder
+#define ENCODER_SW_PIN  34
+#define ENCODER_A_PIN   39
+#define ENCODER_B_PIN   36
 
-// Two-button resistor ladder test input
-#define BUTTON_ADC_PIN  32  // ADC1 input for two analog push buttons
-#define BUTTON_PULLUP_OHMS  10000  // GPIO32 pull-up to 3V3
-#define BUTTON1_RESISTOR_OHMS  10000  // Button 1 series resistor to GND
-#define BUTTON2_RESISTOR_OHMS  20000  // Button 2 series resistor to GND
+// Two-button resistor ladder
+#define BUTTON_ADC_PIN  32
+#define BUTTON_PULLUP_OHMS  10000
+#define BUTTON1_RESISTOR_OHMS  10000
+#define BUTTON2_RESISTOR_OHMS  20000
 
-// Millivolt thresholds between the expected resistor-ladder levels.
 #define BUTTON_BOTH_MAX_MV  1485
 #define BUTTON1_MAX_MV      1925
 #define BUTTON2_MAX_MV      2750
 #define BUTTON_DEBOUNCE_MS  30
 
 // ============================================================================
-// I2C PERIPHERALS (SSD1306 OLED Screen #3 & MPR121)
+// I2C PERIPHERALS
 // ============================================================================
 #define I2C_SDA_PIN     21
 #define I2C_SCL_PIN     22
@@ -72,7 +71,7 @@
 // ============================================================================
 // TOUCH CONFIGURATION
 // ============================================================================
-#define TOUCH_DELTA_THRESHOLD 6     // Drop in filtered capacitance required to trigger a touch
+#define TOUCH_DELTA_THRESHOLD 6
 #define LONG_PRESS_PAD        11
 #define LONG_PRESS_MS         1000
 
@@ -87,12 +86,10 @@
 // ============================================================================
 // MODULATION PARAMETERS
 // ============================================================================
-#define LFO_WAVE_TYPE           0     // 0 = Sine, 1 = Triangle, 2 = Square
-#define LFO_RATE_HZ             5.0f  // Speed of modulation (0.1 Hz to 20.0 Hz)
-
-// Modulation Depths
-#define VIBRATO_DEPTH_SEMITONES 0.2f  // Pitch movement (+/- fraction of a semitone)
-#define TREMOLO_DEPTH           0.3f  // Volume movement (0.0 = off, 1.0 = full attenuation)
+#define LFO_WAVE_TYPE           0
+#define LFO_RATE_HZ             5.0f
+#define VIBRATO_DEPTH_SEMITONES 0.2f
+#define TREMOLO_DEPTH           0.3f
 
 enum SynthMode {
     MODE_FLUTE = 0,
@@ -108,6 +105,7 @@ struct Voice {
     float phase3 = 0.0f;
     float vibratoPhase = 0.0f;
     float amplitude = 0.0f;
+    float targetAmplitude = 0.0f;   // ← NEW: for soft attack/release
 };
 
 const float noteFreqs[12] = {
