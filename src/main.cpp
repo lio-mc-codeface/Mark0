@@ -11,6 +11,7 @@
 
 #include "config.h"
 #include "boot_logo.h"
+#include "boot_screen.h"
 #include "mode_flute.h"
 #include "mode_wavetable.h"
 #include "mode_sampler.h"
@@ -123,6 +124,7 @@ void init_st7789() {
     tft2.setRotation(1);          // try 0,1,2,3 if orientation is wrong
     tft2.invertDisplay(true);    // try true if colors are inverted
     tft2.fillScreen(ST77XX_BLACK);
+    run_boot_animation(tft2);
 }
 
 void draw_scope_trace(const int16_t *samples, uint16_t color) {
