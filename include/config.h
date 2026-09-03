@@ -48,8 +48,8 @@
 #define ENCODER_B_PIN   36
 
 // Two-button resistor ladder
-#define BUTTON_ADC_PIN  32
-#define BUTTON_PULLUP_OHMS  10000
+#define BUTTON_ADC_PIN         32
+#define BUTTON_PULLUP_OHMS     10000
 #define BUTTON1_RESISTOR_OHMS  10000
 #define BUTTON2_RESISTOR_OHMS  20000
 
@@ -97,6 +97,38 @@ enum SynthMode {
     MODE_SAMPLER = 2
 };
 
+enum EnvelopePhase {
+    ENVELOPE_ATTACK = 0,
+    ENVELOPE_DECAY,
+    ENVELOPE_SUSTAIN,
+    ENVELOPE_RELEASE,
+    ENVELOPE_IDLE
+};
+
+// Global Envelope Structure
+struct Envelope {
+    bool enabled = false;
+    float attackTimeSeconds = 0.8f;
+    float decayTimeSeconds = 0.3f;
+    float sustainLevel = 0.7f;
+    float releaseTimeSeconds = 1.5f;
+
+    float attackRate = 0.0f;
+    float decayRate = 0.0f;
+    float releaseRate = 0.0f;
+
+    float amplitude = 0.0f;
+    EnvelopePhase phase = ENVELOPE_IDLE;
+    bool lastGateState = false;
+};
+
+extern Envelope globalEnvelope;
+
+// Helper Functions
+void toggleEnvelope();
+void updateEnvelopeRates();
+void setEnvelopeParameters(float a, float d, float s, float r);
+
 struct Voice {
     int padIndex = -1;
     float baseFreq = 0.0f;
@@ -105,7 +137,7 @@ struct Voice {
     float phase3 = 0.0f;
     float vibratoPhase = 0.0f;
     float amplitude = 0.0f;
-    float targetAmplitude = 0.0f;   // ← NEW: for soft attack/release
+    float targetAmplitude = 0.0f;
 };
 
 const float noteFreqs[12] = {

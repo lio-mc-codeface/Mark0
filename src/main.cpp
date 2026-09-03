@@ -5,7 +5,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include <Adafruit_GC9A01A.h>
-#include <Adafruit_ST7789.h>          // Changed from ST7735
+#include <Adafruit_ST7789.h>
 #include "driver/i2s.h"
 #include <math.h>
 
@@ -16,8 +16,40 @@
 #include "mode_wavetable.h"
 #include "mode_sampler.h"
 
-// Global Objects
+Envelope globalEnvelope;
+
+void updateEnvelopeRates() {
+    float aTime = max(globalEnvelope.attackTimeSeconds, 0.001f);
+    float dTime = max(globalEnvelope.decayTimeSeconds, 0.001f);
+    float rTime = max(globalEnvelope.releaseTimeSeconds, 0.001f);
+
+    globalEnvelope.attackRate = 1.0f / (aTime * SAMPLE_RATE);
+    globalEnvelope.decayRate = (1.0f - globalEnvelope.sustainLevel) / (dTime * SAMPLE_RATE);
+    globalEnvelope.releaseRate = globalEnvelope.sustainLevel / (rTime * SAMPLE_RATE);
+}
+
+void setEnvelopeParameters(float a, float d, float s, float r) {
+    globalEnvelope.attackTimeSeconds = a;
+    globalEnvelope.decayTimeSeconds = d;
+    globalEnvelope.sustainLevel = constrain(s, 0.0f, 1.0f);
+    globalEnvelope.releaseTimeSeconds = r;
+    updateEnvelopeRates();
+}
+
+void toggleEnvelope() {
+    globalEnvelope.enabled = !globalEnvelope.enabled;
+    Serial.print("Global Envelope: ");
+    Serial.println(globalEnvelope.enabled ? "ON" : "OFF");
+    if (globalEnvelope.enabled) {
+        Serial.print(" -> A: "); Serial.print(globalEnvelope.attackTimeSeconds, 4); Serial.println("s");
+        Serial.print(" -> D: "); Serial.print(globalEnvelope.decayTimeSeconds, 4); Serial.println("s");
+        Serial.print(" -> S: "); Serial.print(globalEnvelope.sustainLevel, 2); Serial.println("");
+        Serial.print(" -> R: "); Serial.print(globalEnvelope.releaseTimeSeconds, 4); Serial.println("s");
+    }
+}
+
 volatile SynthMode currentMode = MODE_FLUTE;
+
 volatile uint16_t activeTouchMask = 0;
 volatile uint8_t analogButtonState = 0;
 uint16_t restingCapacitance[12] = {0};
@@ -25,7 +57,8 @@ uint16_t restingCapacitance[12] = {0};
 Adafruit_MPR121 cap = Adafruit_MPR121();
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 Adafruit_GC9A01A tft(TFT1_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
-Adafruit_ST7789 tft2(TFT2_CS_PIN, TFT_DC_PIN, TFT2_RST_PIN);   // Changed
+Adafruit_ST7789 tft2(TFT2_CS_PIN, TFT_DC_PIN, TFT2_RST_PIN);
+
 volatile int16_t visualAudio[BUFFER_SIZE] = {};
 portMUX_TYPE visualAudioMux = portMUX_INITIALIZER_UNLOCKED;
 
@@ -120,9 +153,9 @@ void init_gc9a01() {
 }
 
 void init_st7789() {
-    tft2.init(240, 280);          // 240x280
-    tft2.setRotation(1);          // try 0,1,2,3 if orientation is wrong
-    tft2.invertDisplay(true);    // try true if colors are inverted
+    tft2.init(240, 280);
+    tft2.setRotation(1);
+    tft2.invertDisplay(true);
     tft2.fillScreen(ST77XX_BLACK);
     run_boot_animation(tft2);
 }
@@ -266,6 +299,8 @@ uint8_t read_debounced_buttons() {
 void uiTask(void *pvParameters) {
     unsigned long pad11PressStart = 0;
     bool pad11Handled = false;
+    unsigned long pad7PressStart = 0;
+    bool pad7Handled = false;
 
     vTaskDelay(pdMS_TO_TICKS(100));
     for (uint8_t i = 0; i < 12; i++) {
@@ -283,6 +318,18 @@ void uiTask(void *pvParameters) {
                     mask |= (1 << i);
                 }
             }
+        }
+
+        // Handle Envelope Toggle (Pad 7)
+        if (mask & (1 << 7)) {
+            if (pad7PressStart == 0) pad7PressStart = millis();
+            else if (!pad7Handled && (millis() - pad7PressStart >= LONG_PRESS_MS)) {
+                toggleEnvelope();
+                pad7Handled = true;
+            }
+        } else {
+            pad7PressStart = 0;
+            pad7Handled = false;
         }
 
         if (mask & (1 << LONG_PRESS_PAD)) {
@@ -331,6 +378,72 @@ void audioTask(void *pvParameters) {
             sampler_audio_process(audioBuffer, activeTouchMask);
         }
 
+        // Apply Global Envelope
+        if (globalEnvelope.enabled) {
+            bool gate = (activeTouchMask > 0);
+
+            for (int i = 0; i < BUFFER_SIZE; i++) {
+                // Check edge detection on gate transitions
+                if (gate && !globalEnvelope.lastGateState) {
+                    globalEnvelope.phase = ENVELOPE_ATTACK;
+                } else if (!gate && globalEnvelope.lastGateState) {
+                    globalEnvelope.phase = ENVELOPE_RELEASE;
+                    // Recalculate release rate based on amplitude level at release onset
+                    float rTime = max(globalEnvelope.releaseTimeSeconds, 0.001f);
+                    globalEnvelope.releaseRate = globalEnvelope.amplitude / (rTime * SAMPLE_RATE);
+                }
+                globalEnvelope.lastGateState = gate;
+
+                // State Machine Step
+                switch (globalEnvelope.phase) {
+                    case ENVELOPE_ATTACK:
+                        globalEnvelope.amplitude += globalEnvelope.attackRate;
+                        if (globalEnvelope.amplitude >= 1.0f) {
+                            globalEnvelope.amplitude = 1.0f;
+                            globalEnvelope.phase = ENVELOPE_DECAY;
+                        }
+                        break;
+
+                    case ENVELOPE_DECAY:
+                        if (globalEnvelope.amplitude > globalEnvelope.sustainLevel) {
+                            globalEnvelope.amplitude -= globalEnvelope.decayRate;
+                            if (globalEnvelope.amplitude <= globalEnvelope.sustainLevel) {
+                                globalEnvelope.amplitude = globalEnvelope.sustainLevel;
+                                globalEnvelope.phase = ENVELOPE_SUSTAIN;
+                            }
+                        } else {
+                            globalEnvelope.amplitude += globalEnvelope.decayRate;
+                            if (globalEnvelope.amplitude >= globalEnvelope.sustainLevel) {
+                                globalEnvelope.amplitude = globalEnvelope.sustainLevel;
+                                globalEnvelope.phase = ENVELOPE_SUSTAIN;
+                            }
+                        }
+                        break;
+
+                    case ENVELOPE_SUSTAIN:
+                        globalEnvelope.amplitude = globalEnvelope.sustainLevel;
+                        break;
+
+                    case ENVELOPE_RELEASE:
+                        globalEnvelope.amplitude -= globalEnvelope.releaseRate;
+                        if (globalEnvelope.amplitude <= 0.0f) {
+                            globalEnvelope.amplitude = 0.0f;
+                            globalEnvelope.phase = ENVELOPE_IDLE;
+                        }
+                        break;
+
+                    case ENVELOPE_IDLE:
+                    default:
+                        globalEnvelope.amplitude = 0.0f;
+                        break;
+                }
+
+                // Modulate interleaved stereo stream
+                audioBuffer[i * 2]     = (int16_t)(audioBuffer[i * 2] * globalEnvelope.amplitude);
+                audioBuffer[i * 2 + 1] = (int16_t)(audioBuffer[i * 2 + 1] * globalEnvelope.amplitude);
+            }
+        }
+
         portENTER_CRITICAL(&visualAudioMux);
         for (int i = 0; i < BUFFER_SIZE; i++) {
             visualAudio[i] = audioBuffer[i * 2];
@@ -357,7 +470,7 @@ void setup() {
 
     SPI.begin(SPI_SCLK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN, TFT1_CS_PIN);
 
-    init_st7789();      // New ST7789
+    init_st7789();
     init_gc9a01();
 
     init_i2s_dac();
@@ -366,6 +479,8 @@ void setup() {
     flute_init();
     wavetable_init();
     sampler_init();
+
+    updateEnvelopeRates();
 
     xTaskCreatePinnedToCore(uiTask, "UITask", 4096, NULL, 1, NULL, 0);
     xTaskCreatePinnedToCore(audioTask, "AudioTask", 4096, NULL, 2, NULL, 1);

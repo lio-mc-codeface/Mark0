@@ -88,3 +88,5 @@ New pinout to resolve conflicitng pins
 - Eliminated note-on / note-off clicks and pops
 - Removed volume jumps when adding extra notes in Wavetable mode
 - Improved overall polyphony cleanliness
+
+## v4.7.0 - st77xx boot screen removed dot (simplified) + begining of volume envelope (not working 100% yet)

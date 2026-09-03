@@ -28,8 +28,6 @@ void run_boot_animation(Adafruit_ST7789 &tft) {
     int h = tft.height();
     int cx = w / 2;
     int cy = h / 2;
-    // Max radius to ensure screen is covered (diagonal / 2)
-    int max_r = (int)(sqrt(w*w + h*h) / 2) + 10;
 
     // 1. Color fade (approx 500ms)
     int fade_steps = 20;
@@ -39,15 +37,6 @@ void run_boot_animation(Adafruit_ST7789 &tft) {
         delay(25);
     }
 
-    // 2. Grow black dot (approx 1500ms)
-    int grow_steps = 40;
-    for (int i = 0; i <= grow_steps; i++) {
-        float t = (float)i / grow_steps;
-        // Quadratic growth (t^2) for an exponential look
-        int r = (int)(max_r * (t * t));
-        tft.fillCircle(cx, cy, r, ST77XX_BLACK);
-        delay(37); // 1500ms / 40 steps ≈ 37.5ms
-    }
 }
 
 #endif
