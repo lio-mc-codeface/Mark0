@@ -1,0 +1,1491 @@
+PROTEL NETLIST 2.0
+[
+DESIGNATOR
+U4
+FOOTPRINT
+chu_main:MPR121_BOARD
+PARTTYPE
+chu_main_MPR121QR2_BOARD
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+chu_main:MPR121_BOARD
+Designator
+U4
+Name
+chu_main_MPR121QR2_BOARD
+datasheet
+https://resurgentsemi.com/wp-content/uploads/2018/09/MPR121_rev5-Resurgent.pdf?d453f8&d453f8
+ki_fp_filters
+UQFN*3x3mm*P0.4mm*
+Value
+MPR121QR2_BOARD
+User doc link
+https://resurgentsemi.com/wp-content/uploads/2018/09/MPR121_rev5-Resurgent.pdf?d453f8&d453f8
+Add into BOM
+no
+Description
+
+Device
+chu_main_MPR121QR2_BOARD
+Unique ID
+gge2
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1e1222
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U5
+FOOTPRINT
+MAX98357-BRD
+PARTTYPE
+MAX98357
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+MAX98357-BRD
+Designator
+U5
+Name
+MAX98357
+Add into BOM
+no
+Description
+
+Device
+MAX98357
+Unique ID
+gge3
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1e1364
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+A1
+FOOTPRINT
+project-footprints:GY-PCM5102
+PARTTYPE
+gy-pcm5102_GY-PCM5102
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+project-footprints:GY-PCM5102
+Designator
+A1
+Name
+gy-pcm5102_GY-PCM5102
+Value
+GY-PCM5102
+User doc link
+
+Add into BOM
+no
+Description
+
+Device
+gy-pcm5102_GY-PCM5102
+Unique ID
+gge4
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1e1432
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U1
+FOOTPRINT
+ESP32_lio-DEVKITV1
+PARTTYPE
+ESP_lio-DEV
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+ESP32_lio-DEVKITV1
+Designator
+U1
+Name
+
+Add into BOM
+no
+Description
+
+Device
+ESP_lio-DEV
+Unique ID
+gge152
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2640
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U2
+FOOTPRINT
+MEMS-D14mm
+PARTTYPE
+MEMS-INMP441-CIRCULARPCB14
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+MEMS-D14mm
+Designator
+U2
+Name
+
+Add into BOM
+no
+Description
+
+Device
+MEMS-INMP441-CIRCULARPCB14
+Unique ID
+gge153
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2646
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+Display2
+FOOTPRINT
+TFT0.96_SPI_80X160_ST7735_2
+PARTTYPE
+ST7735 0.96&quot; 80x160 TFT LCD2
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+TFT0.96_SPI_80X160_ST7735_2
+Designator
+Display2
+Name
+ST7735 0.96&quot; 80x160 TFT LCD2
+Supplier Part
+
+Supplier
+
+Add into BOM
+no
+Description
+
+3D Model Title
+
+Device
+ST7735 0.96&quot; 80x160 TFT LCD2
+Unique ID
+gge150
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2673
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U3
+FOOTPRINT
+1.28"screen
+PARTTYPE
+1.28"screen
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+1.28"screen
+Designator
+U3
+Name
+
+Add into BOM
+no
+Description
+
+Device
+1.28"screen
+Unique ID
+gge154
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2682
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R51
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R51
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+10kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_4
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2694
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R52
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R52
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+10kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_5
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2693
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R53
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R53
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+10kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_6
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2711
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+SW2
+FOOTPRINT
+SW-TH_EC11E18244A5
+PARTTYPE
+EC11E18244A5
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+SW-TH_EC11E18244A5
+Designator
+SW2
+LCSC Part Name
+EC11E18244A5
+Supplier Part
+C255515
+Manufacturer
+ALPSALPINE(阿尔卑斯阿尔派)
+Manufacturer Part
+EC11E18244A5
+Supplier Footprint
+插件
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20180717/C255515_FDB072715C920DA9BADE9D32EFEB8093.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+SW-TH_EC11E18244A5-L11.7-W12.0-H24.5-P2.5-LS14.5
+Name
+EC11E18244A5
+Description
+
+Device
+EC11E18244A5
+Unique ID
+gge109
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2690
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U57
+FOOTPRINT
+SW-TH_6P-L12.7-W11.4-P4.7-LS4.8_1MD1T1B1M1QES-5
+PARTTYPE
+1MD1T1B1M1QES-5
+DESCRIPTION
+Circuit:DPDT Mechanical Life:40,000 Times Actuator Type:Cylinder knob Pin Style:Solder Mounting Style:Direct Insert Operating Temperature:-40℃~+85℃ Operating Temperature:-40℃~+85℃
+Component Kind
+Standard
+Footprint
+SW-TH_6P-L12.7-W11.4-P4.7-LS4.8_1MD1T1B1M1QES-5
+Designator
+U57
+LCSC Part Name
+1M系列 钮子开关 摇头开关 Miniature Toggle Switches(4件套) 四件套
+Supplier Part
+C545197
+Manufacturer
+Dailywell(德利威)
+Manufacturer Part
+1MD1T1B1M1QES-5
+Supplier Footprint
+插件
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20200324/C496156_2ADF9A5CBAD5D1759B53B5484F08AA84.pdf
+Supplier
+LCSC
+Add into BOM
+no
+Circuit
+DPDT
+Mechanical Life
+40,000 Times
+Actuator Type
+Cylinder knob
+Pin Style
+Solder
+Mounting Style
+Direct Insert
+Operating Temperature
+-40℃~+85℃
+Name
+1MD1T1B1M1QES-5
+Description
+Circuit:DPDT Mechanical Life:40,000 Times Actuator Type:Cylinder knob Pin Style:Solder Mounting Style:Direct Insert Operating Temperature:-40℃~+85℃ Operating Temperature:-40℃~+85℃
+Device
+1MD1T1B1M1QES-5
+Unique ID
+gge141
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2701
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R1
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R1
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+10kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_7
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2722
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+H1
+FOOTPRINT
+HDR-TH_4P-P2.54-V-F
+PARTTYPE
+PM2.54-1*4
+DESCRIPTION
+Holes Structure:1x4P Pitch:2.54mm Row Spacing:2.54mm Circular Hole / Square Hole:Square Hole Mounting Type:Through Hole Number of Rows:1 Number of Positions:4P Current Rating:2.5A Holes Direction:Top Insulation Height:8.5mm Operating Temperature:-40℃~+105
+Component Kind
+Standard
+Footprint
+HDR-TH_4P-P2.54-V-F
+Designator
+H1
+LCSC Part Name
+间距:2.54mm 1x4P 直插
+Supplier Part
+C5116530
+Manufacturer
+ZHOURI(洲日)
+Manufacturer Part
+PM2.54-1*4
+Supplier Footprint
+插件,P=2.54mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://item.szlcsc.com/datasheet/PM2.54-1*4/5692947.html
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+HDR-TH_4P-P2.54-V-F
+Holes Structure
+1x4P
+Pitch
+2.54mm
+Row Spacing
+2.54mm
+Circular Hole / Square Hole
+Square Hole
+Mounting Type
+Through Hole
+Number of Rows
+1
+Number of Positions
+4P
+Current Rating
+2.5A
+Holes Direction
+Top
+Insulation Height
+8.5mm
+Operating Temperature
+-40℃~+105℃
+Name
+PM2.54-1*4
+Description
+Holes Structure:1x4P Pitch:2.54mm Row Spacing:2.54mm Circular Hole / Square Hole:Square Hole Mounting Type:Through Hole Number of Rows:1 Number of Positions:4P Current Rating:2.5A Holes Direction:Top Insulation Height:8.5mm Operating Temperature:-40℃~+105
+Device
+PM2.54-1*4
+Unique ID
+gge157
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2737
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U6
+FOOTPRINT
+SD-CARD-ADDAPTER
+PARTTYPE
+SD-card-addapter
+DESCRIPTION
+
+Component Kind
+Standard
+Designator
+U6
+Footprint
+SD-CARD-ADDAPTER
+Name
+
+Add into BOM
+no
+Description
+
+Device
+SD-card-addapter
+Unique ID
+gge159
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2749
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+U8
+FOOTPRINT
+0.96" spi screen 80x160
+PARTTYPE
+0.96" spi screen 80x160
+DESCRIPTION
+
+Component Kind
+Standard
+Footprint
+0.96" spi screen 80x160
+Designator
+U8
+Name
+
+Add into BOM
+no
+Description
+
+Device
+0.96" spi screen 80x160
+Unique ID
+gge155
+3D Model Title
+undefined
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2734
+PCB Layer
+TopLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+BUTTON1
+FOOTPRINT
+HDR-TH_2P-P2.54-V-F
+PARTTYPE
+PM2.54-1X2PM-H85
+DESCRIPTION
+Holes Structure:1x2P Pitch:2.54mm Row Spacing:- Circular Hole / Square Hole:Square Hole Mounting Type:Through Hole Number of Rows:1 Number of Positions:2P Current Rating:3A Voltage Rating (Max):- Holes Direction:Top Insulation Height:8.5mm Contact Materia
+Component Kind
+Standard
+Footprint
+HDR-TH_2P-P2.54-V-F
+Designator
+BUTTON1
+LCSC Part Name
+1x2P 间距:2.54mm 直插
+Supplier Part
+C42431841
+Manufacturer
+JXTCONN(聚兴泰)
+Manufacturer Part
+PM2.54-1X2PM-H85
+Supplier Footprint
+插件,P=2.54mm
+JLCPCB Part Class
+
+Datasheet
+https://item.szlcsc.com/datasheet/PM2.54-1X2PM-H85/44458971.html
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+HDR-TH_2P-P2.54-F-LI-1X2P
+Holes Structure
+1x2P
+Pitch
+2.54mm
+Row Spacing
+-
+Circular Hole / Square Hole
+Square Hole
+Mounting Type
+Through Hole
+Number of Rows
+1
+Number of Positions
+2P
+Current Rating
+3A
+Voltage Rating (Max)
+-
+Holes Direction
+Top
+Insulation Height
+8.5mm
+Contact Material
+-
+Contact Plating
+Gold
+Operating Temperature
+-40℃~+105℃
+Name
+PM2.54-1X2PM-H85
+Description
+Holes Structure:1x2P Pitch:2.54mm Row Spacing:- Circular Hole / Square Hole:Square Hole Mounting Type:Through Hole Number of Rows:1 Number of Positions:2P Current Rating:3A Voltage Rating (Max):- Holes Direction:Top Insulation Height:8.5mm Contact Materia
+Device
+PM2.54-1X2PM-H85
+Unique ID
+gge161
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2753
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+BUTTON2
+FOOTPRINT
+HDR-TH_2P-P2.54-V-F
+PARTTYPE
+PM2.54-1X2PM-H85
+DESCRIPTION
+Holes Structure:1x2P Pitch:2.54mm Row Spacing:- Circular Hole / Square Hole:Square Hole Mounting Type:Through Hole Number of Rows:1 Number of Positions:2P Current Rating:3A Voltage Rating (Max):- Holes Direction:Top Insulation Height:8.5mm Contact Materia
+Component Kind
+Standard
+Footprint
+HDR-TH_2P-P2.54-V-F
+Designator
+BUTTON2
+LCSC Part Name
+1x2P 间距:2.54mm 直插
+Supplier Part
+C42431841
+Manufacturer
+JXTCONN(聚兴泰)
+Manufacturer Part
+PM2.54-1X2PM-H85
+Supplier Footprint
+插件,P=2.54mm
+JLCPCB Part Class
+
+Datasheet
+https://item.szlcsc.com/datasheet/PM2.54-1X2PM-H85/44458971.html
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+HDR-TH_2P-P2.54-F-LI-1X2P
+Holes Structure
+1x2P
+Pitch
+2.54mm
+Row Spacing
+-
+Circular Hole / Square Hole
+Square Hole
+Mounting Type
+Through Hole
+Number of Rows
+1
+Number of Positions
+2P
+Current Rating
+3A
+Voltage Rating (Max)
+-
+Holes Direction
+Top
+Insulation Height
+8.5mm
+Contact Material
+-
+Contact Plating
+Gold
+Operating Temperature
+-40℃~+105℃
+Name
+PM2.54-1X2PM-H85
+Description
+Holes Structure:1x2P Pitch:2.54mm Row Spacing:- Circular Hole / Square Hole:Square Hole Mounting Type:Through Hole Number of Rows:1 Number of Positions:2P Current Rating:3A Voltage Rating (Max):- Holes Direction:Top Insulation Height:8.5mm Contact Materia
+Device
+PM2.54-1X2PM-H85
+Unique ID
+gge160
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2752
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R2
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R2
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+10kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_8
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2751
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R3
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R3
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+10kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_9
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2754
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+[
+DESIGNATOR
+R4
+FOOTPRINT
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+PARTTYPE
+MF1/4W-10KΩ±1% T
+DESCRIPTION
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Component Kind
+Standard
+Footprint
+RES-TH_BD2.3-L6.5-P10.50-D0.5
+Designator
+R4
+LCSC Part Name
+10kΩ ±1% 250mW 金属膜电阻 圆柱状直插
+Supplier Part
+C119347
+Manufacturer
+CCO(千志电子)
+Manufacturer Part
+MF1/4W-10KΩ±1% T
+Supplier Footprint
+插件,D2.3xL6.5mm
+JLCPCB Part Class
+Extended Part
+Datasheet
+https://atta.szlcsc.com/upload/public/pdf/source/20190910/C427326_62A6D058BC0FF74963A2F22379CA06CE.pdf
+Supplier
+LCSC
+Add into BOM
+no
+3D Model Title
+RES-TH_D2.3-L6.5-P10.50
+Type
+Metal Film Resistors
+Value
+10kΩ
+Tolerance
+±1%
+Voltage-Supply(Max)
+250V
+Power(Watts)
+250mW
+Temperature Coefficient
+±100ppm/℃
+Operating Temperature
+-55℃~+155℃
+Name
+20kΩ
+Description
+Type:Metal Film Resistors Resistance: Tolerance:±1% Tolerance:±1% Voltage-Supply(Max):250V Power(Watts):250mW Temperature Coefficient:±100ppm/℃ Temperature Coefficient:±100ppm/℃ Operating Temperature:-55℃~+155℃ Operating Temperature:-55℃~+155℃
+Device
+MF1/4W-10KΩ±1% T
+Unique ID
+gge4_10
+Reuse Block
+
+Group ID
+
+Channel ID
+$1I2755
+PCB Layer
+BottomLayer
+Convert to PCB
+yes
+
+*
+]
+(
+MPR121_IRQ 
+U4-1 chu_main_MPR121QR2_BOARD-1 Passive 
+U1-23 ESP_lio-DEV-23 Passive 
+)
+(
+I2C_SCL 
+U4-2 chu_main_MPR121QR2_BOARD-2 Passive 
+U4-4 chu_main_MPR121QR2_BOARD-4 Passive 
+U1-17 ESP_lio-DEV-17 Passive 
+U8-3 0.96" spi screen 80x160-3 Passive 
+)
+(
+I2C_SDA 
+U4-3 chu_main_MPR121QR2_BOARD-3 Passive 
+U1-20 ESP_lio-DEV-20 Passive 
+U8-4 0.96" spi screen 80x160-4 Passive 
+)
+(
+GND 
+U4-6 chu_main_MPR121QR2_BOARD-6 Passive 
+U5-GND MAX98357-GND Passive 
+A1-5 gy-pcm5102_GY-PCM5102-5 Passive 
+A1-8 gy-pcm5102_GY-PCM5102-8 Passive 
+A1-10 gy-pcm5102_GY-PCM5102-10 Passive 
+A1-12 gy-pcm5102_GY-PCM5102-12 Passive 
+A1-14 gy-pcm5102_GY-PCM5102-14 Passive 
+A1-15 gy-pcm5102_GY-PCM5102-15 Passive 
+U1-14 ESP_lio-DEV-14 Passive 
+U1-29 ESP_lio-DEV-29 Passive 
+U2-4 MEMS-INMP441-CIRCULARPCB14-4 Passive 
+Display2-1 ST7735 0.96&quot; 80x160 TFT LCD2-1 Passive 
+U3-2 1.28"screen-2 Passive 
+SW2-6 EC11E18244A5-6 Passive 
+SW2-7 EC11E18244A5-7 Passive 
+SW2-C EC11E18244A5-C Passive 
+SW2-E EC11E18244A5-E Passive 
+U57-2 1MD1T1B1M1QES-5-2 Passive 
+H1-2 PM2.54-1*4-2 Passive 
+U6-6 SD-card-addapter-6 Passive 
+U8-1 0.96" spi screen 80x160-1 Passive 
+R3-1 MF1/4W-10KΩ±1% T-1 Passive 
+R4-1 MF1/4W-10KΩ±1% T-1 Passive 
+)
+(
+KEY0 
+U4-8 chu_main_MPR121QR2_BOARD-8 Passive 
+)
+(
+KEY1 
+U4-9 chu_main_MPR121QR2_BOARD-9 Passive 
+)
+(
+KEY2 
+U4-10 chu_main_MPR121QR2_BOARD-10 Passive 
+)
+(
+KEY3 
+U4-11 chu_main_MPR121QR2_BOARD-11 Passive 
+)
+(
+KEY4 
+U4-12 chu_main_MPR121QR2_BOARD-12 Passive 
+)
+(
+KEY5 
+U4-13 chu_main_MPR121QR2_BOARD-13 Passive 
+)
+(
+KEY6 
+U4-14 chu_main_MPR121QR2_BOARD-14 Passive 
+)
+(
+KEY7 
+U4-15 chu_main_MPR121QR2_BOARD-15 Passive 
+)
+(
+KEY8 
+U4-16 chu_main_MPR121QR2_BOARD-16 Passive 
+)
+(
+KEY9 
+U4-17 chu_main_MPR121QR2_BOARD-17 Passive 
+)
+(
+KEY10 
+U4-18 chu_main_MPR121QR2_BOARD-18 Passive 
+)
+(
+KEY11 
+U4-19 chu_main_MPR121QR2_BOARD-19 Passive 
+)
+(
+3V3 
+U4-20 chu_main_MPR121QR2_BOARD-20 Passive 
+A1-13 gy-pcm5102_GY-PCM5102-13 Passive 
+U1-30 ESP_lio-DEV-30 Passive 
+U2-3 MEMS-INMP441-CIRCULARPCB14-3 Passive 
+U2-5 MEMS-INMP441-CIRCULARPCB14-5 Passive 
+Display2-2 ST7735 0.96&quot; 80x160 TFT LCD2-2 Passive 
+Display2-8 ST7735 0.96&quot; 80x160 TFT LCD2-8 Passive 
+U3-1 1.28"screen-1 Passive 
+R51-2 MF1/4W-10KΩ±1% T-2 Passive 
+R52-2 MF1/4W-10KΩ±1% T-2 Passive 
+R53-2 MF1/4W-10KΩ±1% T-2 Passive 
+R1-2 MF1/4W-10KΩ±1% T-2 Passive 
+U6-1 SD-card-addapter-1 Passive 
+U8-2 0.96" spi screen 80x160-2 Passive 
+R2-2 MF1/4W-10KΩ±1% T-2 Passive 
+)
+(
+VIN_PWR 
+U5-VIN MAX98357-VIN Passive 
+U57-4 1MD1T1B1M1QES-5-4 Passive 
+)
+(
+I2S_DOUT 
+U5-DIN MAX98357-DIN Passive 
+A1-3 gy-pcm5102_GY-PCM5102-3 Passive 
+U1-24 ESP_lio-DEV-24 Passive 
+)
+(
+I2S_BCK 
+U5-BCLK MAX98357-BCLK Passive 
+A1-2 gy-pcm5102_GY-PCM5102-2 Passive 
+U1-9 ESP_lio-DEV-9 Passive 
+)
+(
+I2S_LRC 
+U5-LRC MAX98357-LRC Passive 
+A1-4 gy-pcm5102_GY-PCM5102-4 Passive 
+U1-8 ESP_lio-DEV-8 Passive 
+)
+(
+5V 
+A1-6 gy-pcm5102_GY-PCM5102-6 Passive 
+U1-15 ESP_lio-DEV-15 Passive 
+U57-5 1MD1T1B1M1QES-5-5 Passive 
+H1-1 PM2.54-1*4-1 Passive 
+)
+(
+ENC_B 
+U1-2 ESP_lio-DEV-2 Passive 
+R51-1 MF1/4W-10KΩ±1% T-1 Passive 
+SW2-B EC11E18244A5-B Passive 
+)
+(
+ENC_A 
+U1-3 ESP_lio-DEV-3 Passive 
+R52-1 MF1/4W-10KΩ±1% T-1 Passive 
+SW2-A EC11E18244A5-A Passive 
+)
+(
+ENC_SW 
+U1-4 ESP_lio-DEV-4 Passive 
+SW2-D EC11E18244A5-D Passive 
+R1-1 MF1/4W-10KΩ±1% T-1 Passive 
+)
+(
+I2S_MIC_SD 
+U1-5 ESP_lio-DEV-5 Passive 
+U2-6 MEMS-INMP441-CIRCULARPCB14-6 Passive 
+)
+(
+buttons 
+U1-6 ESP_lio-DEV-6 Passive 
+BUTTON1-1 PM2.54-1X2PM-H85-1 Passive 
+BUTTON2-1 PM2.54-1X2PM-H85-1 Passive 
+R2-1 MF1/4W-10KΩ±1% T-1 Passive 
+)
+(
+TFT2_RST 
+U1-7 ESP_lio-DEV-7 Passive 
+Display2-5 ST7735 0.96&quot; 80x160 TFT LCD2-5 Passive 
+)
+(
+I2S_MIC_SCK 
+U1-10 ESP_lio-DEV-10 Passive 
+U2-1 MEMS-INMP441-CIRCULARPCB14-1 Passive 
+)
+(
+TFT1_CS 
+U1-11 ESP_lio-DEV-11 Passive 
+U3-6 1.28"screen-6 Passive 
+)
+(
+WS2812 
+U1-12 ESP_lio-DEV-12 Passive 
+H1-3 PM2.54-1*4-3 Passive 
+)
+(
+SD_CS 
+U1-13 ESP_lio-DEV-13 Passive 
+U6-2 SD-card-addapter-2 Passive 
+)
+(
+SPI_MOSI 
+U1-16 ESP_lio-DEV-16 Passive 
+Display2-4 ST7735 0.96&quot; 80x160 TFT LCD2-4 Passive 
+U3-4 1.28"screen-4 Passive 
+U6-3 SD-card-addapter-3 Passive 
+)
+(
+SPI_MISO 
+U1-21 ESP_lio-DEV-21 Passive 
+U6-5 SD-card-addapter-5 Passive 
+)
+(
+SPI_SCLK 
+U1-22 ESP_lio-DEV-22 Passive 
+Display2-3 ST7735 0.96&quot; 80x160 TFT LCD2-3 Passive 
+U3-3 1.28"screen-3 Passive 
+U6-4 SD-card-addapter-4 Passive 
+)
+(
+TFT_DC 
+U1-25 ESP_lio-DEV-25 Passive 
+Display2-6 ST7735 0.96&quot; 80x160 TFT LCD2-6 Passive 
+U3-5 1.28"screen-5 Passive 
+)
+(
+I2S_MIC_WS 
+U1-26 ESP_lio-DEV-26 Passive 
+U2-2 MEMS-INMP441-CIRCULARPCB14-2 Passive 
+)
+(
+TFT_RST 
+U1-27 ESP_lio-DEV-27 Passive 
+U3-7 1.28"screen-7 Passive 
+)
+(
+TFT2_CS 
+U1-28 ESP_lio-DEV-28 Passive 
+Display2-7 ST7735 0.96&quot; 80x160 TFT LCD2-7 Passive 
+)
+(
+TOGGLE 
+R53-1 MF1/4W-10KΩ±1% T-1 Passive 
+U57-1 1MD1T1B1M1QES-5-1 Passive 
+)
+(
+DOUT 
+H1-4 PM2.54-1*4-4 Passive 
+)
+(
+$1N2813 
+BUTTON1-2 PM2.54-1X2PM-H85-2 Passive 
+R3-2 MF1/4W-10KΩ±1% T-2 Passive 
+)
+(
+$1N2814 
+BUTTON2-2 PM2.54-1X2PM-H85-2 Passive 
+R4-2 MF1/4W-10KΩ±1% T-2 Passive 
+)

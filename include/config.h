@@ -99,7 +99,6 @@ enum SynthMode {
 
 enum EnvelopePhase {
     ENVELOPE_ATTACK = 0,
-    ENVELOPE_DECAY,
     ENVELOPE_SUSTAIN,
     ENVELOPE_RELEASE,
     ENVELOPE_IDLE
@@ -108,13 +107,11 @@ enum EnvelopePhase {
 // Global Envelope Structure
 struct Envelope {
     bool enabled = false;
-    float attackTimeSeconds = 0.8f;
-    float decayTimeSeconds = 0.3f;
-    float sustainLevel = 0.7f;
-    float releaseTimeSeconds = 1.5f;
+    float attackTimeSeconds = 1.0f;
+    float sustainLevel = 1.0f;
+    float releaseTimeSeconds = 3.0f;
 
     float attackRate = 0.0f;
-    float decayRate = 0.0f;
     float releaseRate = 0.0f;
 
     float amplitude = 0.0f;
@@ -127,7 +124,7 @@ extern Envelope globalEnvelope;
 // Helper Functions
 void toggleEnvelope();
 void updateEnvelopeRates();
-void setEnvelopeParameters(float a, float d, float s, float r);
+void setEnvelopeParameters(float a, float s, float r);
 
 struct Voice {
     int padIndex = -1;

@@ -81,7 +81,7 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
         if (fluteVoices[v].padIndex != -1) {
             uint8_t pad = fluteVoices[v].padIndex;
             if (!(touchMask & (1 << pad))) {
-                fluteVoices[v].targetAmplitude = 0.0f;  // soft release
+                fluteVoices[v].padIndex = -1; // Immediately release voice
             }
         }
     }
@@ -92,30 +92,10 @@ void flute_audio_process(int16_t *buffer, uint16_t touchMask) {
         int activeVoiceCount = 0;
 
         for (int v = 0; v < MAX_VOICES; v++) {
-            // Soft attack / release
-            const float ampSpeed = 0.001f;  // adjust for faster/slower fade
-
-            if (fluteVoices[v].amplitude < fluteVoices[v].targetAmplitude) {
-                fluteVoices[v].amplitude += ampSpeed;
-                if (fluteVoices[v].amplitude > fluteVoices[v].targetAmplitude) {
-                    fluteVoices[v].amplitude = fluteVoices[v].targetAmplitude;
-                }
-            } else if (fluteVoices[v].amplitude > fluteVoices[v].targetAmplitude) {
-                fluteVoices[v].amplitude -= ampSpeed;
-                if (fluteVoices[v].amplitude < fluteVoices[v].targetAmplitude) {
-                    fluteVoices[v].amplitude = fluteVoices[v].targetAmplitude;
-                }
-            }
-
-            // Free voice when fully faded out
-            if (fluteVoices[v].padIndex != -1 &&
-                fluteVoices[v].targetAmplitude <= 0.0f &&
-                fluteVoices[v].amplitude < 0.001f) {
-                fluteVoices[v].padIndex = -1;
-            }
-
-            if (fluteVoices[v].amplitude > 0.001f) {
+            // Voice active check
+            if (fluteVoices[v].padIndex != -1) {
                 activeVoiceCount++;
+                fluteVoices[v].amplitude = 1.0f; // Always full volume when active
 
                 // Vibrato
                 float vibratoLFO = sinf(fluteVoices[v].vibratoPhase);

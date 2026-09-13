@@ -399,7 +399,7 @@ void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
     // 2. Voice Release
     for (int v = 0; v < MAX_VOICES; v++) {
         if (waveVoices[v].padIndex != -1 && !(touchMask & (1 << waveVoices[v].padIndex))) {
-            waveVoices[v].targetAmplitude = 0.0f;   // soft release
+            waveVoices[v].padIndex = -1; // Immediately release voice
         }
     }
 
@@ -416,28 +416,10 @@ void wavetable_audio_process(int16_t *buffer, uint16_t touchMask) {
         int activeVoiceCount = 0;
 
         for (int v = 0; v < MAX_VOICES; v++) {
-            // Soft attack / release
-            const float ampSpeed = 0.0025f;
-
-            if (waveVoices[v].amplitude < waveVoices[v].targetAmplitude) {
-                waveVoices[v].amplitude += ampSpeed;
-                if (waveVoices[v].amplitude > waveVoices[v].targetAmplitude)
-                    waveVoices[v].amplitude = waveVoices[v].targetAmplitude;
-            } else if (waveVoices[v].amplitude > waveVoices[v].targetAmplitude) {
-                waveVoices[v].amplitude -= ampSpeed;
-                if (waveVoices[v].amplitude < waveVoices[v].targetAmplitude)
-                    waveVoices[v].amplitude = waveVoices[v].targetAmplitude;
-            }
-
-            // Free voice when fully silent
-            if (waveVoices[v].padIndex != -1 &&
-                waveVoices[v].targetAmplitude <= 0.0f &&
-                waveVoices[v].amplitude < 0.001f) {
-                waveVoices[v].padIndex = -1;
-            }
-
-            if (waveVoices[v].amplitude > 0.001f) {
+            // Voice active check
+            if (waveVoices[v].padIndex != -1) {
                 activeVoiceCount++;
+                waveVoices[v].amplitude = 1.0f; // Always full volume when active
 
                 float pitchFactor = powf(2.0f, (lfoVal * g_vibratoDepth) / 12.0f);
                 float currentFreq = waveVoices[v].baseFreq * pitchFactor;
